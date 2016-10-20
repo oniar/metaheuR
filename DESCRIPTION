@@ -56,4 +56,5 @@ Collate:
     BayesianNetwork.R
     EHBSA.R
     PlackettLuce.R
+    sequence_problems.R
 RoxygenNote: 5.0.1

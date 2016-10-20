@@ -102,5 +102,7 @@ export(
   bayesianNetwork,
   ehbsa,
   plackettLuce,
-  generalizedMallowsModel
+  generalizedMallowsModel,
+  closestStringProblem,
+  farthestStringProblem
 )

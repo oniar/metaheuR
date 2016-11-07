@@ -17,61 +17,50 @@
 #' gcol.problem$valid(corrected.sol)
 #' gcol.problem$plot(rnd.sol)
 #' gcol.problem$plot(corrected.sol)
-#' 
-closestStringProblem <- function(graph) {
-  size  <- length(V(graph))
-  edges <- get.edgelist(graph)
+
+hammingDistance <-function(s1,s2){
+  # funtzio honi deitzen zaionean jada berdinak dira tamainak if(length(s1)!=length(s2))
+  count <-0
+  for (i in 1:length(s1)) {
+    if(s1[i]!=s2[i]){
+      count<-count+1
+    }
+  }
+  return(count)
+}
+#probarako mat<-matrix(c(aaabc,baabc,cbbbc),ncol = length(aaabc),byrow = TRUE)
+closestStringProblem <- function(matrix) {
+  size  <- ncol(matrix)
+  num.string<-nrow(matrix)
+  lev <- levels(as.factor(matrix))
   
   evaluate <- function(solution) {
     if (length(solution) != size) {
       stop(paste("The solution has to be of the same length as the list of nodes: ", size))
     }
-    return(length(unique(solution)))
-  }
+    hamming.distance<-0
+    for(i in 1:num.string){
+      if(hamming.distance < hammingDistance(matrix[i,],solution)){
+        hamming.distance<-hammingDistance(matrix[i,],solution)
+      }
+    }
+    return(hamming.distance)
+}
   
   valid <- function(solution) {
     if (length(solution) != size) {
       stop(paste("The solution has to be of the same length as the list of nodes: ", size))
     }
-    return(all(!(solution[edges[, 1]] == solution[edges[, 2]])))
-  }
-  
-  correct <- function(solution) {
-    if (length(solution) != size) {
-      stop(paste("The solution has to be of the same length as the list of nodes: ", size))
+ 
+    if(length(levels(factor(solution)))>length(lev)){
+      return(FALSE)
     }
+    return (all(levels(factor(solution))%in%lev))
+   
     
-    to.correct <- which(solution[edges[, 1]] == solution[edges[, 2]])
-    for (link in to.correct) {
-      node <- edges[link, 1]
-      neighbors <- neighbors(graph, node)
-      # Get the first level that is not used in a neighbor
-      replace <- which(!(levels(solution) %in% solution[neighbors]))[1]
-      # Replace the value associated to the node with that level
-      solution[node] <- levels(solution)[replace]
-    }
-    return(solution)
   }
   
-  plotSolution <- function (solution, node.size=5, label.cex=0.5) {
-    require(colorspace)
-    values <- unique(as.numeric(solution))
-    num.colors <- length(values)
-    palette <- rainbow_hcl(num.colors, c=50, l=70, start=0, 
-                           end=360 * (num.colors - 1) / num.colors)
-    colors <- as.numeric(solution)
-    for (i in 1:num.colors) {
-      colors[colors == values[i]] <- palette[i]
-    }
-    V(graph)$color <- colors
-    V(graph)$label <- solution
-    plot.igraph(graph, vertex.size=node.size, edge.arrow.mode="-", 
-                vertex.label.color="white", vertex.label.family="sans", 
-                vertex.label.cex=label.cex)
-  }
-  
-  return(list(evaluate=evaluate, valid=valid, 
-              correct=correct, plot=plotSolution))
+  return(list(evaluate=evaluate, valid=valid))
 }
 
 
@@ -87,42 +76,37 @@ closestStringProblem <- function(graph) {
 #' library("igraph")
 #' 
 
-farthestStringProblem <- function (graph, penalization=0) {
-  size <- length(V(graph))
-  edges <- get.edgelist(graph)
-  countViolations <- function (solution) {
-    # Create a subgraph with the passed nodes and check there are no links
-    subg <- induced.subgraph(graph, V(graph)[solution])
-    sum(degree(subg) > 0)
-  }
+farthestStringProblem <- function (matrix) {
+  size  <- ncol(matrix)
+  num.string<-nrow(matrix)
+  lev <- levels(factor(matrix))
   
-  evaluate <- function (solution) {
-    ev <- -1 * (sum(solution) - penalization * countViolations(solution))
-    return(ev)
-  }
-  
-  valid <- function (solution){
-    return(countViolations(solution) == 0)
-  }
-  
-  correct <- function (solution) {
-    while(!valid(solution)) {
-      # Create a subgraph with the passed nodes and check there are no links
-      subg <- induced.subgraph(graph, V(graph)[solution])
-      id <- which.max(degree(graph) * solution)
-      solution[id] <- FALSE
+  evaluate <- function(solution) {
+    if (length(solution) != size) {
+      stop(paste("The solution has to be of the same length as the list of nodes: ", size))
     }
-    return(solution)
+    hamming.distance<-size
+    for(i in 1:num.string){
+      if(hamming.distance > hammingDistance(matrix[i,],solution)){
+        hamming.distance<-hammingDistance(matrix[i,],solution)
+      }
+    }
+    return(hamming.distance)
   }
   
-  plotSolution <- function (solution, node.size=5) {
-    col <- rep("white", length(solution))
-    col[solution] <- "black"
-    V(graph)$color <- col 
-    plot.igraph(graph, vertex.size=node.size, 
-                vertex.label=NA, edge.arrow.mode="-")
+  valid <- function(solution) {
+    if (length(solution) != size) {
+      stop(paste("The solution has to be of the same length as the list of nodes: ", size))
+    }
+    
+    if(length(levels(factor(solution)))>length(lev)){
+      return(FALSE)
+    }
+    return (all(levels(factor(solution))%in%lev))
+    
+    
   }
   
-  return(list(evaluate=evaluate, valid=valid, correct=correct, 
-              plot=plotSolution))
+  
+  return(list(evaluate=evaluate, valid=valid))
 }

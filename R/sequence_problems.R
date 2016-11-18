@@ -31,7 +31,7 @@ closestStringProblem <- function(matrix, alpha.vec) {
   evaluate <- function(solution) {
     if (!all(levels(factor(solution)) %in% alphabet)) {
       stop(paste(
-        " The solution has to be of the same alphabet as the list of nodes"
+        " The solution has to be of the same alphabet as the alphabet vector"
       ))
     }
     
@@ -51,7 +51,7 @@ closestStringProblem <- function(matrix, alpha.vec) {
   valid <- function(solution) {
     if (!all(levels(factor(solution)) %in% alphabet)) {
       stop(paste(
-        " The solution has to be of the same alphabet as the list of nodes"
+        " The solution has to be of the same alphabet as the alphabet vector"
       ))
     }
     
@@ -94,7 +94,7 @@ farthestStringProblem <- function (matrix, alpha.vec) {
   evaluate <- function(solution) {
     if (!all(levels(factor(solution)) %in% alpha.vec)) {
       stop(paste(
-        " The solution has to be of the same alphabet as the list of nodes"
+        " The solution has to be of the same alphabet as the alphabet vector"
       ))
     }
     if (length(solution) != size) {
@@ -114,7 +114,7 @@ farthestStringProblem <- function (matrix, alpha.vec) {
   valid <- function(solution) {
     if (!all(levels(factor(solution)) %in% alpha.vec)) {
       stop(paste(
-        " The solution has to be of the same alphabet as the list of nodes"
+        " The solution has to be of the same alphabet as the alphabet vector"
       ))
     }
     if (length(solution) != size) {

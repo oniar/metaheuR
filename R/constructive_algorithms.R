@@ -108,3 +108,37 @@ misGreedy <- function (graph, cl.size=1){
   }
   return(mis)
 }
+
+cspGreedy<-function(matrix,alph, cl.size=1){
+  n<-ncol(matrix)
+  m<-length(alph)
+  f<-function(i){
+    alph<-sample(alph)
+    
+    g <- function(j) {
+      return(sum(matrix[,i]%in%alph[j]))
+    }
+    
+    distances <- sapply(1:m, FUN = g)
+    return(alph[match(min(distances),distances)])
+  }
+  
+  return(sapply(1:n, FUN = f))
+}
+
+fspGreedy<-function(matrix,alph, cl.size=1){
+  n<-ncol(matrix)
+  m<-length(alph)
+  f<-function(i){
+    alph<-sample(alph)
+    
+    g <- function(j) {
+      return(sum(matrix[,i]%in%alph[j]))
+    }
+    
+    distances <- sapply(1:m, FUN = g)
+    return(alph[match(max(distances),distances)])
+  }
+  
+  return(sapply(1:n, FUN = f))
+}

@@ -112,6 +112,13 @@ misGreedy <- function (graph, cl.size=1){
 cspGreedy<-function(matrix,alph, cl.size=1){
   n<-ncol(matrix)
   m<-length(alph)
+  
+  if (!all(levels(factor(matrix)) %in% alph)) {
+    stop(paste(
+      " The solution has to be of the same alphabet as the alphabet vector"
+    ))
+  }
+  
   f<-function(i){
     alph<-sample(alph)
     
@@ -129,6 +136,13 @@ cspGreedy<-function(matrix,alph, cl.size=1){
 fspGreedy<-function(matrix,alph, cl.size=1){
   n<-ncol(matrix)
   m<-length(alph)
+  
+  if (!all(levels(factor(matrix)) %in% alph)) {
+    stop(paste(
+      " The solution has to be of the same alphabet as the alphabet vector"
+    ))
+  }
+  
   f<-function(i){
     alph<-sample(alph)
     

@@ -52,6 +52,7 @@ exportMethods(
 
 export(
   permutation,
+  seqListToMatrix,
   randomPermutation,
   identityPermutation,
   tspProblem,

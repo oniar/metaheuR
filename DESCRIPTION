@@ -57,4 +57,5 @@ Collate:
     EHBSA.R
     PlackettLuce.R
     sequence_problems.R
+    access_genbank.R
 RoxygenNote: 5.0.1

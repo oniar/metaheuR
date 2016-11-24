@@ -1,3 +1,4 @@
+
 #' Graph coloring problem
 #'
 #' This function generates an evaluation, validity and correction functions associated  with a classical graph coloring problem.

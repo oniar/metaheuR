@@ -1,3 +1,4 @@
+
 #' Constructive greedy algorithm for the TSP problem
 #' 
 #' @description This function implements a simple constructive greedy algorithm for the TSP problem

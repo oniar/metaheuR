@@ -3,31 +3,81 @@
 # run the application by clicking 'Run App' above.
 #
 # Find out more about building applications with Shiny here:
-# 
+#
 #    http://shiny.rstudio.com/
 #
 
 library(shiny)
 
 # Define UI for application that draws a histogram
-shinyUI(fluidPage(
-  
+shinyUI(navbarPage("Optimizazio heuristikorako R pakete baten hedapena",
+  tabPanel(
   # Application title
-  titlePanel("Optimizazio heuristikorako R pakete baten hedapena"),
+  "Instantziak",
   
-  # Sidebar with a slider input for number of bins 
-  sidebarLayout(
-    sidebarPanel(
-       sliderInput("bins",
-                   "Number of bins:",
-                   min = 1,
-                   max = 50,
-                   value = 30)
-    ),
-    
-    # Show a plot of the generated distribution
-    mainPanel(
-       plotOutput("distPlot")
-    )
+  # Sidebar with a slider input for number of bins
+  column(6,sidebarLayout(# Show a plot of the generated distribution
+    fluidRow(sidebarPanel(
+      selectInput(
+        inputId = "Problema",
+        label = "Hautatu problema: ",
+        choices = c(
+          "Grafoa koloreztatzearen problema",
+          "Motxilaren problema",
+          "Garraio problema"
+        )
+      )
+    )),
+    fluidRow(mainPanel(tags$h3("Ezaugarriak: "),tags$h4(textOutput("distPlot"))))
+)
+),column(6,mainPanel(tags$h3("Code: "),verbatimTextOutput("distPlot2")))
+  
+),
+
+tabPanel(
+  # Application title
+  "Algoritmoa",
+  
+  # Sidebar with a slider input for number of bins
+  column(6,sidebarLayout(# Show a plot of the generated distribution
+    fluidRow(sidebarPanel(
+      selectInput(
+        inputId = "Algoritmoa",
+        label = "Hautatu algoritmoa: ",
+        choices = c(
+          "Grafoa koloreztatzearen problema",
+          "Motxilaren problema",
+          "Garraio problema"
+        )
+      )
+    )),
+    fluidRow(mainPanel(tags$h3("Ezaugarriak: "),tags$h4(textOutput("distPlot3"))))
   )
+  ),column(6,mainPanel(tags$h3("Code: "),verbatimTextOutput("distPlot4")))
+  
+),
+
+tabPanel(
+  # Application title
+  "Exekuzioa",
+  
+  # Sidebar with a slider input for number of bins
+  column(6,sidebarLayout(# Show a plot of the generated distribution
+    fluidRow(sidebarPanel(
+      selectInput(
+        inputId = "Problema",
+        label = "Hautatu problema: ",
+        choices = c(
+          "Grafoa koloreztatzearen problema",
+          "Motxilaren problema",
+          "Garraio problema"
+        )
+      )
+    )),
+    fluidRow(mainPanel(tags$h4(textOutput("distPlot5"))))
+  )
+  ),column(6,mainPanel(verbatimTextOutput("distPlot6")))
+  
+)
+
 ))

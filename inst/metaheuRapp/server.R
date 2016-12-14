@@ -1,18 +1,9 @@
-#
-# This is the server logic of a Shiny web application. You can run the 
-# application by clicking 'Run App' above.
-#
-# Find out more about building applications with Shiny here:
-# 
-#    http://shiny.rstudio.com/
-#
 
 library(shiny)
 
-# Define server logic required to draw a histogram
 shinyServer(function(input, output) {
    
-  output$distPlot <- renderText({
+  output$problemaEzaugarriak <- renderText({
     
     if (input$Problema =="Grafoa koloreztatzearen problema") {
       paste("This function generates an evaluation, validity and correction functions associated with a classical graph coloring problem")
@@ -27,7 +18,7 @@ shinyServer(function(input, output) {
     
   })
   
-  output$distPlot2 <- renderText({
+  output$problemaKodea <- renderText({
     
     if (input$Problema =="Grafoa koloreztatzearen problema") {
       
@@ -55,7 +46,7 @@ shinyServer(function(input, output) {
     
   })
   
-  output$distPlot3 <- renderText({
+  output$algoritmoEzaugarriak <- renderText({
     
     if (input$Algoritmoa =="Grafoa koloreztatzearen problema") {
       paste("This function generates an evaluation, validity and correction functions associated with a classical graph coloring problem")
@@ -70,7 +61,7 @@ shinyServer(function(input, output) {
     
   })
   
-  output$distPlot4 <- renderText({
+  output$algoritmoKodea <- renderText({
     
     if (input$Problema =="Grafoa koloreztatzearen problema") {
       
@@ -95,6 +86,12 @@ shinyServer(function(input, output) {
       tsp <- tspProblem(cmatrix)
       paste(tsp[1])
     }
+    
+  })
+  
+  output$plotProgresioa <- renderPlot({
+    
+    plot(x = 1,y = 1)
     
   })
   

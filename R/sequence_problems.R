@@ -109,7 +109,8 @@ farthestStringProblem <- function (matrix, alpha.vec) {
       return(hammingDistance(solution, matrix[i, ]))
     }
     distances <- sapply(1:num.string, FUN = f)
-    return(min(distances))
+    
+    return(-1*(min(distances)))
   }
   
   valid <- function(solution) {

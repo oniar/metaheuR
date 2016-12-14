@@ -128,10 +128,10 @@ cspGreedy<-function(matrix,alph, cl.size=1){
     }
     
     distances <- sapply(1:m, FUN = g)
-    return(alph[match(min(distances),distances)])
+    return(alph[match(max(distances),distances)])
   }
   
-  return(sapply(1:n, FUN = f))
+  return(factor(sapply(1:n, FUN = f),levels = alph))
 }
 
 fspGreedy<-function(matrix,alph, cl.size=1){
@@ -152,8 +152,8 @@ fspGreedy<-function(matrix,alph, cl.size=1){
     }
     
     distances <- sapply(1:m, FUN = g)
-    return(alph[match(max(distances),distances)])
+    return(alph[match(min(distances),distances)])
   }
   
-  return(sapply(1:n, FUN = f))
+  return(factor(sapply(1:n, FUN = f),levels = alph))
 }

@@ -9,75 +9,80 @@
 
 library(shiny)
 
-# Define UI for application that draws a histogram
-shinyUI(navbarPage("Optimizazio heuristikorako R pakete baten hedapena",
-  tabPanel(
-  # Application title
-  "Instantziak",
-  
-  # Sidebar with a slider input for number of bins
-  column(6,sidebarLayout(# Show a plot of the generated distribution
-    fluidRow(sidebarPanel(
-      selectInput(
-        inputId = "Problema",
-        label = "Hautatu problema: ",
-        choices = c(
-          "Grafoa koloreztatzearen problema",
-          "Motxilaren problema",
-          "Garraio problema"
-        )
-      )
-    )),
-    fluidRow(mainPanel(tags$h3("Ezaugarriak: "),tags$h4(textOutput("distPlot"))))
-)
-),column(6,mainPanel(tags$h3("Code: "),verbatimTextOutput("distPlot2")))
-  
-),
-
-tabPanel(
-  # Application title
-  "Algoritmoa",
-  
-  # Sidebar with a slider input for number of bins
-  column(6,sidebarLayout(# Show a plot of the generated distribution
-    fluidRow(sidebarPanel(
-      selectInput(
-        inputId = "Algoritmoa",
-        label = "Hautatu algoritmoa: ",
-        choices = c(
-          "Grafoa koloreztatzearen problema",
-          "Motxilaren problema",
-          "Garraio problema"
-        )
-      )
-    )),
-    fluidRow(mainPanel(tags$h3("Ezaugarriak: "),tags$h4(textOutput("distPlot3"))))
+shinyUI(
+  navbarPage(
+    "Optimizazio heuristikorako R pakete baten hedapena",
+    
+    #-----------INSTANTZIAK-----------#
+    tabPanel(
+      "Instantziak",
+      column(6, sidebarLayout(
+        fluidRow(sidebarPanel(
+          selectInput(
+            inputId = "Problema",
+            label = "Hautatu problema: ",
+            choices = c(
+              "Grafoa koloreztatzearen problema",
+              "Motxilaren problema",
+              "Garraio problema"
+            )
+          )
+        )),
+        fluidRow(mainPanel(
+          tags$h3("Ezaugarriak: "), tags$h4(textOutput("problemaEzaugarriak"))
+        ))
+      )),
+      column(6, mainPanel(
+        tags$h3("Code: "), verbatimTextOutput("problemaKodea")
+      ))
+      
+    ),
+    
+    #-----------ALGORITMOA-----------#
+    tabPanel("Algoritmoa",
+             column(12,sidebarLayout(
+               fluidRow(sidebarPanel(
+                 selectInput(
+                   inputId = "Algoritmoa",
+                   label = "Hautatu algoritmoa: ",
+                   choices = c(
+                     "Grafoa koloreztatzearen problema",
+                     "Motxilaren problema",
+                     "Garraio problema"
+                   )
+                 )
+               )),
+               fluidRow(mainPanel(
+                 tags$h3("Ezaugarriak: "), tags$h4(textOutput("algoritmoEzaugarriak"))
+               ))
+             ))),
+    
+    
+    #-----------EXEKUZIOA-----------#
+    tabPanel("Exekuzioa",
+             column(8, sidebarLayout(
+               fluidRow(sidebarPanel(
+                 tags$h3("Gelditzeko irizpideak: "),
+                 fluidRow(column(6, numericInput(
+                   "t",
+                   label = "t: ",
+                   value = 0
+                 )),
+                 
+                 column(
+                   6, numericInput("Eb",
+                                   label = "Eb: ",
+                                   value = 0)
+                 )),
+                 
+                 
+                 actionButton("run", label = "Run")
+               )),
+               fluidRow(plotOutput("plotProgresioa"))
+             )),
+             column(4, mainPanel(
+               tags$h3("Code: "), verbatimTextOutput("algoritmoKodea")
+             )))
+    
   )
-  ),column(6,mainPanel(tags$h3("Code: "),verbatimTextOutput("distPlot4")))
-  
-),
-
-tabPanel(
-  # Application title
-  "Exekuzioa",
-  
-  # Sidebar with a slider input for number of bins
-  column(6,sidebarLayout(# Show a plot of the generated distribution
-    fluidRow(sidebarPanel(
-      selectInput(
-        inputId = "Problema",
-        label = "Hautatu problema: ",
-        choices = c(
-          "Grafoa koloreztatzearen problema",
-          "Motxilaren problema",
-          "Garraio problema"
-        )
-      )
-    )),
-    fluidRow(mainPanel(tags$h4(textOutput("distPlot5"))))
-  )
-  ),column(6,mainPanel(verbatimTextOutput("distPlot6")))
-  
 )
-
-))

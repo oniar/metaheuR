@@ -61,6 +61,17 @@ initial.solution <- factor (colors, levels = colors)
 h.ngh <- hammingNeighborhood(base = initial.solution)
 
 
+
+initial.solution<-factor(solution.csp.hvr1, levels = alph)
+h.ngh<-hammingNeighborhood(base = initial.solution)
+
+em<-basicLocalSearch(evaluate = csp.hvr1$evaluate,initial.solution = initial.solution, neighborhood = h.ngh,  selector = cspGreedy)
+
+
+
+
+
+
 ## ----GC_3, prompt=TRUE---------------------------------------------------
 resources <- cresource(time = 10 , evaluations = 100*n^2 , iterations = 100*n)
 

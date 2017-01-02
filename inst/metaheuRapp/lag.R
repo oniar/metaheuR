@@ -52,3 +52,40 @@ library(metaheuR)
     value = 0.5
   )
   
+  eskuz.matrizea.tsp<-textInput(
+    inputId = "mat.tsp",
+    label = "Sartu zure datuak banan banan matrizea eraikitzeko, n karratua izan behar du.",
+    placeholder = "1 2 3 4 5 6 7 8 9 ..."
+  )
+  
+  eskuz.matrizea.str<-textInput(
+    inputId = "mat.str",
+    label = "Sartu zure sententziak ',' batez banandurik.",
+    placeholder = "a b c b, b a c a ..."
+  )
+  
+  sortu.matrizea<-actionButton(
+    inputId = "sor.mat",
+    label = "Sortu"
+  )
+  
+  tamaina.matrizea<-numericInput(
+    inputId = "tam.mat",
+    label = "n matrize zabalera sartuz sortu ausazko matrizea",
+    value = 2, 
+    min = 2
+  )
+  
+  ausazko.matrizea<-actionButton(
+    inputId = "aus.mat",
+    label = "Sortu"
+  )
+  
+  alfabetoa<-textInput(
+    inputId = "alfabeto",
+    label = "Sartu alfabetoa",
+    placeholder = "a b c ..."
+  )
+  
+  
+  

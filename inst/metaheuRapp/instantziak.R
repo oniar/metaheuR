@@ -1,6 +1,6 @@
 Instantziak<-tabPanel(
   "Instantziak",
-  column(6, sidebarLayout(
+  column(4, sidebarLayout(
     fluidRow(sidebarPanel(
       problema
     )),
@@ -8,7 +8,14 @@ Instantziak<-tabPanel(
       tags$h3("Ezaugarriak: "), tags$h4(textOutput("problemaEzaugarriak"))
       ))
   )),
-  column(6, mainPanel(
+  
+  column(4, mainPanel(
+    uiOutput("uiInst"),
+    tags$h4(tableOutput("matrize"))
+ 
+  )),
+  
+  column(4, mainPanel(
     tags$h3("Code: "), verbatimTextOutput("problemaKodea")
   ))
   

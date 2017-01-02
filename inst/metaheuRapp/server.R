@@ -5,6 +5,9 @@ library(metaheuR)
 
 shinyServer(function(input, output) {
   
+  
+
+  
   output$problemaEzaugarriak <- renderText({
     
     if (input$Problema =="Travelling salesman problem") {
@@ -55,7 +58,7 @@ shinyServer(function(input, output) {
   })
   
   
-  output$ui <- renderUI({
+  output$uiAlg <- renderUI({
     
     if (is.null(input$Algoritmoa))
       return()
@@ -72,9 +75,72 @@ shinyServer(function(input, output) {
     
   })
   
+ 
   
+  output$uiInst <- renderUI({
+
+    if (is.null(input$Problema))
+       return()
+     
+     switch (input$Problema,
+             "Travelling salesman problem" = tags$div(
+               eskuz.matrizea.tsp,
+               sortu.matrizea,
+               tags$h3("edo"),
+               tamaina.matrizea,
+               ausazko.matrizea,
+               div(
+                   
+               )
+             ),
+             "Closest String Problem" = tags$div(
+               eskuz.matrizea.str,
+               alfabetoa,
+               sortu.matrizea,
+               tags$h3("edo"),
+               tamaina.matrizea,
+               ausazko.matrizea,
+               div(
+                 
+               )
+               
+             ),
+             "Farthest String Problem" = tags$div(
+               eskuz.matrizea.str,
+               alfabetoa,
+               sortu.matrizea,
+               tags$h3("edo"),
+               tamaina.matrizea,
+               ausazko.matrizea,
+               div(
+                 
+               )
+             )
+     )
+    
+  })
   
+
   
+  observeEvent(input$aus.mat, {
+    output$matrize<-renderTable({
+      n<-input$tam.mat
+      cmatrix<-matrix(runif(n^2), ncol = n)
+      cmatrix
+    })
+  })
+  
+  observeEvent(input$sor.mat, {
+    output$matrize<-renderTable({
+      data<-input$mat.tsp
+      data<-strsplit(data,split = " ")
+      data<-as.integer(unlist(data))
+      cmatrix<-matrix(data=data,nrow = sqrt(length(data)), byrow = TRUE)
+      cmatrix
+    })
+  })
+  
+
   output$algoritmoKodea <- renderText({
     
     if (input$Problema =="Grafoa koloreztatzearen problema") {

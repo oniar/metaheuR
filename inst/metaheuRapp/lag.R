@@ -58,14 +58,23 @@ library(metaheuR)
     placeholder = "1 2 3 4 5 6 7 8 9 ..."
   )
   
-  eskuz.matrizea.str<-textInput(
-    inputId = "mat.str",
-    label = "Sartu zure sententziak ',' batez banandurik.",
-    placeholder = "a b c b, b a c a ..."
+  file.input.csp<-fileInput(
+    inputId = "ireki.fitx.csp",
+    label = "Ireki zure fitxategia"
   )
   
-  sortu.matrizea<-actionButton(
-    inputId = "sor.mat",
+  file.input.fsp<-fileInput(
+    inputId = "ireki.fitx.fsp",
+    label = "Ireki zure fitxategia"
+  )
+  
+  sortu.matrizea.tsp<-actionButton(
+    inputId = "sor.mat.tsp",
+    label = "Sortu"
+  )
+  
+  sortu.matrizea.str<-actionButton(
+    inputId = "sor.mat.str",
     label = "Sortu"
   )
   
@@ -77,15 +86,20 @@ library(metaheuR)
   )
   
   ausazko.matrizea<-actionButton(
-    inputId = "aus.mat",
+    inputId = "aus.mat.tsp",
     label = "Sortu"
   )
   
-  alfabetoa<-textInput(
-    inputId = "alfabeto",
+  alfabeto.csp<-textInput(
+    inputId = "alfabeto.csp",
     label = "Sartu alfabetoa",
     placeholder = "a b c ..."
   )
   
+  alfabeto.fsp<-textInput(
+    inputId = "alfabeto.fsp",
+    label = "Sartu alfabetoa",
+    placeholder = "a b c ..."
+  )
   
   

@@ -11,7 +11,8 @@ Instantziak<-tabPanel(
   
   column(4, mainPanel(
     uiOutput("uiInst"),
-    tags$h4(tableOutput("matrize"))
+    tags$h4(textOutput("alfabeto")),
+    tableOutput("matrize")
  
   )),
   

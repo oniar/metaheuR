@@ -1,5 +1,3 @@
-
-
 library(shiny)
 library(metaheuR)
 
@@ -69,21 +67,88 @@ shinyServer(function(input, output) {
   })
   
   
+    
+  
   output$uiAlg <- renderUI({
     if (is.null(input$Algoritmoa))
       return()
     
-    switch (
-      input$Algoritmoa,
-      "Bilaketa lokala" = tags$div(hasiera.soluzioa,
-                                   ingurunea,
-                                   selector,
-                                   restart.estrategia),
-      "Algoritmo genetikoa" = ""
+    switch (input$Algoritmoa,
+            "Bilaketa lokala" = {
+              if (is.null(input$Algoritmoa))
+                return()
+              
+              switch (input$Problema,
+                      "Travelling salesman problem" = tags$div(
+                        ingurunea.tsp,
+                        selector
+                        # restart.estrategia
+                      ),
+                      "Closest String Problem" = tags$div(
+                        ingurunea.str,
+                        selector
+                        
+                      ),
+                      
+                      "Farthest String Problem" = tags$div( 
+                        ingurunea.str,
+                        selector
+                      )
+                      
+              )
+            },
+            "Algoritmo genetikoa" = {
+              if (is.null(input$Algoritmoa))
+                return()
+              
+              switch (input$Problema,
+                      "Travelling salesman problem" = tags$div(
+                        populazio.tamaina,
+                        subpopulazioa,
+                        selection.ratio,
+                        gurutzaketa.aukeratu,
+                        gurutzaketa.tsp,
+                        mutazioa.tsp,
+                        ratio,
+                        mutation.rate
+                      ),
+                      "Closest String Problem" = tags$div(
+                        populazio.tamaina,
+                        subpopulazioa,
+                        selection.ratio,
+                        gurutzaketa.aukeratu,
+                        gurutzaketa.str,
+                        cross.k,
+                        mutazioa.str,
+                        ratio,
+                        mutation.rate
+                      ),
+                      
+                      "Farthest String Problem" = tags$div(
+                        populazio.tamaina,
+                        subpopulazioa,
+                        selection.ratio,
+                        gurutzaketa.aukeratu,
+                        gurutzaketa.str,
+                        cross.k,
+                        mutazioa.str,
+                        ratio,
+                        mutation.rate
+                      )
+                      
+              )
+            }
     )
     
   })
   
+  output$ui.ranking<-renderUI({
+    
+    if(input$Algoritmoa=="Algoritmo genetikoa" && input$subpopulazioa=="rouletteSelection"){
+      use.ranking
+    }else return()
+    
+  })
   
   
   output$uiInst <- renderUI({
@@ -99,14 +164,16 @@ shinyServer(function(input, output) {
         tamaina.matrizea,
         ausazko.matrizea
       ),
-      "Closest String Problem" = tags$div(alfabeto.csp,
-                                          file.input.csp,
-                                          sortu.matrizea.str,
-                                          tags$h3("Alfabetoa: ")),
-      "Farthest String Problem" = tags$div(alfabeto.fsp,
-                                           file.input.fsp,
-                                           sortu.matrizea.str,
-                                           tags$h3("Alfabetoa: "))
+      "Closest String Problem" = tags$div(
+        alfabeto.csp,
+        file.input.csp,
+        sortu.matrizea.str,
+        tags$h3("Alfabetoa: ")),
+      "Farthest String Problem" = tags$div(
+        alfabeto.fsp,
+        file.input.fsp,
+        sortu.matrizea.str,
+        tags$h3("Alfabetoa: "))
     )
     
   })
@@ -149,11 +216,11 @@ shinyServer(function(input, output) {
     else if (input$Problema == "Farthest String Problem"){
       fi <- input$ireki.fitx.fsp
     }else{return(NULL)}
-      if (is.null(fi)){
-        return(NULL)}
-      d <- read.table(fi$datapath, header = FALSE, sep = " ")
-      cmatrix <- as.matrix(d)
-      cmatrix
+    if (is.null(fi)){
+      return(NULL)}
+    d <- read.table(fi$datapath, header = FALSE, sep = " ")
+    cmatrix <- as.matrix(d)
+    cmatrix
     
   })
   

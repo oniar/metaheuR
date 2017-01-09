@@ -7,11 +7,12 @@ problema<-selectInput(
   inputId = "Problema",
   label = "Hautatu problema: ",
   choices = c(
-    "Travelling salesman problem",
+    #"Travelling salesman problem",
     "Closest String Problem",
     "Farthest String Problem"
   ), 
-  width = '100%'
+  width = '100%',
+  selected = TRUE
 )
 
 algoritmoa<-selectInput(
@@ -42,7 +43,7 @@ ingurunea.str<-selectInput(
 )
 
 selector<-selectInput(
-  inputId = "Selector",
+  inputId = "selector",
   label = "Hautatu selector: ",
   choices = c("greedy","first improvement")
 )
@@ -90,8 +91,8 @@ sortu.matrizea.str<-actionButton(
 tamaina.matrizea<-numericInput(
   inputId = "tam.mat",
   label = "n matrize zabalera sartuz sortu ausazko matrizea",
-  value = 2, 
-  min = 2
+  value = 4, 
+  min = 4
 )
 
 ausazko.matrizea<-actionButton(
@@ -190,3 +191,22 @@ mutation.rate<-sliderInput(
   max = 1,
   value = 0.5
 )
+
+
+denbora<-numericInput(
+  "denbora",
+  label = "Denbora: ",
+  value = 0
+)
+
+eb.kopurua<-numericInput("eb.kopurua",
+                         label = "Ebaluazioak: ",
+                         value = 0)
+
+it.kopurua<-numericInput("it.kopurua",
+                         label = "Iterazioak: ",
+                         value = 0)
+
+run<-actionButton("run",
+                  label = "Run")
+

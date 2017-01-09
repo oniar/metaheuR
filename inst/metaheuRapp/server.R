@@ -3,6 +3,9 @@ library(metaheuR)
 
 
 shinyServer(function(input, output) {
+  
+  ###Problema ezaugarriak###
+  
   output$problemaEzaugarriak <- renderText({
     if (is.null(input$Problema))
       return()
@@ -20,6 +23,9 @@ shinyServer(function(input, output) {
       )
     )
   })
+  
+  
+  ###Problema kodea#
   
   output$problemaKodea <- renderText({
     if (input$Problema == "Travelling salesman problem") {
@@ -52,6 +58,48 @@ shinyServer(function(input, output) {
     
   })
   
+  
+  ###Problema Instantziak###
+  
+  output$uiInst <- renderUI({
+    if (is.null(input$Problema))
+      return()
+    
+    switch (
+      input$Problema,
+      "Travelling salesman problem" = tags$div(
+        # eskuz.matrizea.tsp,
+        # sortu.matrizea.tsp,
+        # tags$h3("edo"),
+        tamaina.matrizea
+        # ausazko.matrizea
+      ),
+      "Closest String Problem" = tags$div(
+        alfabeto.csp,
+        file.input.csp,
+        sortu.matrizea.str,
+        tags$h3("Alfabetoa: ")),
+      "Farthest String Problem" = tags$div(
+        alfabeto.fsp,
+        file.input.fsp,
+        sortu.matrizea.str,
+        tags$h3("Alfabetoa: "))
+    )
+    
+  })
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  ###Algoritmo ezaugarriak###
+  
   output$algoritmoEzaugarriak <- renderText({
     if (input$Algoritmoa == "Bilaketa lokala") {
       paste(
@@ -67,7 +115,7 @@ shinyServer(function(input, output) {
   })
   
   
-    
+  
   
   output$uiAlg <- renderUI({
     if (is.null(input$Algoritmoa))
@@ -151,79 +199,54 @@ shinyServer(function(input, output) {
   })
   
   
-  output$uiInst <- renderUI({
-    if (is.null(input$Problema))
-      return()
-    
-    switch (
-      input$Problema,
-      "Travelling salesman problem" = tags$div(
-        eskuz.matrizea.tsp,
-        sortu.matrizea.tsp,
-        tags$h3("edo"),
-        tamaina.matrizea,
-        ausazko.matrizea
-      ),
-      "Closest String Problem" = tags$div(
-        alfabeto.csp,
-        file.input.csp,
-        sortu.matrizea.str,
-        tags$h3("Alfabetoa: ")),
-      "Farthest String Problem" = tags$div(
-        alfabeto.fsp,
-        file.input.fsp,
-        sortu.matrizea.str,
-        tags$h3("Alfabetoa: "))
-    )
-    
-  })
   
   
   
   
-  observeEvent(input$aus.mat.tsp, {
-    output$matrize <- renderTable({
+  
+  # observeEvent(input$aus.mat.tsp, {
+  output$matrize <- renderTable({
+    if (input$Problema == "Travelling salesman problem") {
       n <- input$tam.mat
       cmatrix <- matrix(runif(n ^ 2), ncol = n)
-      if (input$Problema == "Travelling salesman problem") {
-        cmatrix
-      }
-    })
-  })
-  
-  observeEvent(input$sor.mat.tsp, {
-    output$matrize <- renderTable({
-      data <- input$mat.tsp
-      data <- strsplit(data, split = " ")
-      data <- as.numeric(unlist(data))
-      cmatrix <-
-        matrix(
-          data = data,
-          nrow = sqrt(length(data)),
-          ncol = sqrt(length(data)),
-          byrow = TRUE
-        )
-      if (input$Problema == "Travelling salesman problem") {
-        cmatrix
-      }
-    })
-  })
-  
-  output$matrize <- renderTable({
-    if (input$Problema == "Closest String Problem") {
-      fi <- input$ireki.fitx.csp
+      cmatrix
     }
-    else if (input$Problema == "Farthest String Problem"){
-      fi <- input$ireki.fitx.fsp
-    }else{return(NULL)}
-    if (is.null(fi)){
-      return(NULL)}
-    d <- read.table(fi$datapath, header = FALSE, sep = " ")
-    cmatrix <- as.matrix(d)
-    cmatrix
-    
   })
+  # })
   
+  # observeEvent(input$sor.mat.tsp, {
+  #   output$matrize <- renderTable({
+  #     if (input$Problema == "Travelling salesman problem") {
+  #       data <- input$mat.tsp
+  #       data <- strsplit(data, split = " ")
+  #       data <- as.numeric(unlist(data))
+  #       cmatrix <-
+  #         matrix(
+  #           data = data,
+  #           nrow = sqrt(length(data)),
+  #           ncol = sqrt(length(data)),
+  #           byrow = TRUE
+  #         )
+  #       cmatrix
+  #     }
+  #   })
+  # })
+  # 
+  # output$matrize <- renderTable({
+  #   if (input$Problema == "Closest String Problem") {
+  #     fi <- input$ireki.fitx.csp
+  #   }
+  #   else if (input$Problema == "Farthest String Problem"){
+  #     fi <- input$ireki.fitx.fsp
+  #   }else{return(NULL)}
+  #   if (is.null(fi)){
+  #     return(NULL)}
+  #   d <- read.table(fi$datapath, header = TRUE, sep = " ")
+  #   cmatrix <- as.matrix(d)
+  #   cmatrix
+  #   
+  # })
+  # 
   output$alfabeto<-renderText({
     if (input$Problema == "Closest String Problem") {
       alph <- input$alfabeto.csp
@@ -268,6 +291,131 @@ shinyServer(function(input, output) {
     plot(x = 1, y = 1)
     
   })
+  
+  
+  output$oni <- renderText({
+    args<-list()
+    
+    if (is.null(input$ireki.fitx.csp)){
+      data <- c('a','c','g','a','t','a','g','g','g')
+      cmatrix<-matrix(data,nrow = 3,byrow = TRUE)
+    }
+    else{
+    fi <- input$ireki.fitx.csp
+    d <- read.table(fi$datapath, header = TRUE, sep = " ")
+    cmatrix <- as.matrix(d)
+    }
+    a <- input$alfabeto.csp
+    ab <- strsplit(a, " ")
+    alph <- ab[[1]]
+    
+    
+    csp <- closestStringProblem(cmatrix,alph)
+     n<-ncol(cmatrix)
+     initial.solution <- factor(replicate(n, paste(sample(alph, 1, replace = TRUE), collapse = "")))
+     
+     args$evaluate <- csp$evaluate
+     
+     if (is.null(input$ingurunea.csp))
+       return()
+     switch (input$ingurunea.csp,
+             "hammingNeighborhood" = h.ngh <- hammingNeighborhood(base = initial.solution)
+     )
+     args$initial.solution <- initial.solution
+     args$neighborhood <- h.ngh
+     if (is.null(input$selector))
+       return()
+     
+  
+     
+     switch (input$selector,
+             "greedy" =  args$selector<-greedySelector ,
+             "first improvement" = args$selector<-firstImprovementSelector
+     )
+     sol<-do.call(basicLocalSearch,args)
+     
+     getSolution(sol)
+    
+  })
+  
+  
+  # output$oni<-renderText({
+  #   if (is.null(input$Algoritmoa))
+  #     return()
+  #   switch (input$Algoritmoa,
+  #           "Bilaketa lokala" = {
+  #             if (is.null(input$Problema))
+  #               return()
+  #             switch (input$Problema,
+  #                     "Travelling salesman problem" = {
+  #                       args<-list()
+  #                       tam.mat<-input$tam.mat
+  #                       cmatrix <- matrix(runif(tam.mat^2), ncol=tam.mat)
+  #                       tsp <- tspProblem(cmatrix)
+  #                       initial.solution <- randomPermutation(tam.mat)
+  #                       
+  #                       args$evaluate <- tsp$evaluate
+  #                       
+  #                       if (is.null(input$ingurunea.tsp))
+  #                         return()
+  #                       switch (input$ingurunea.tsp,
+  #                               "swapNeighborhood" = h.ngh <- swapNeighborhood(base = initial.solution),
+  #                               "exchangeNeighborhood" = h.ngh <- exchangeNeighborhood(base = initial.solution),
+  #                               "insertNeighborhood" = h.ngh <- insertNeighborhood(base = initial.solution)
+  #                       )
+  #                       args$initial.solution <- initial.solution
+  #                       args$neighborhood <- h.ngh
+  #                       if (is.null(input$selector))
+  #                         return()
+  #                       
+  #                       
+  #                       
+  #                       switch (input$selector,
+  #                               "greedy" =  args$selector<-greedySelector ,
+  #                               "first improvement" = args$selector<-firstImprovementSelector
+  #                       )
+  #                       sol<-do.call(basicLocalSearch,args)
+  #                       
+  #                       getSolution(sol)@permutation
+  #                       
+  #                     },
+  #                     "Closest String Problem" = {
+  #                       
+  #                        
+  #                     },
+  #                     "Farthest String Problem" = {
+  #                       
+  #                     }
+  #             )
+  #             
+  #             
+  #           },
+  #           "Algoritmo genetikoa" = {
+  #             if (is.null(input$Problema))
+  #               return()
+  #             switch (input$Problema,
+  #                     "Travelling salesman problem" = {
+  #                       args<-list()
+  #                       tam.mat<-input$tam.mat
+  #                       cmatrix <- matrix(runif(tam.mat^2), ncol=tam.mat)
+  #                       tsp <- tspProblem(cmatrix)
+  #                     },
+  #                     "Closest String Problem" = {},
+  #                     "Farthest String Problem" = {}
+  #             )        
+  #             sol<-do.call(basicGeneticAlgorithm,args)
+  #           }
+  #   )
+  #   
+  #   
+  #   
+  #   
+  #   
+  #   
+  #   
+  #   
+  # })
+  
   
   
 })

@@ -52,7 +52,6 @@ exportMethods(
 
 export(
   permutation,
-  seqListToMatrix,
   randomPermutation,
   identityPermutation,
   tspProblem,
@@ -89,6 +88,7 @@ export(
   rouletteSelection,
   elitistSelection,
   binaryMutation,
+  swapMutation,
   factorMutation,
   kPointCrossover,
   orderCrossover,

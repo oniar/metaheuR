@@ -2,61 +2,242 @@ library(shiny)
 library(metaheuR)
 
 
+
 shinyServer(function(input, output) {
   
-  ###Problema ezaugarriak###
+  rvalues<-reactiveValues()
   
-  output$problemaEzaugarriak <- renderText({
-    if (is.null(input$Problema))
-      return()
-    
-    switch (
-      input$Problema,
-      "Travelling salesman problem" = paste(
-        "This function generates an evaluation function associated with a TSP problem"
-      ),
-      "Closest String Problem"      = paste(
-        "Hainbat sekuentzia emanik, gertueneko beste sekuentzia bat itzultzen du."
-      ),
-      "Farthest String Problem"     = paste(
-        "Hainbat sekuentzia emanik, hurruneneko beste sekuentzia bat itzultzen du."
+  rvalues$problema <- NULL
+  rvalues$ingurunea <- NULL
+  rvalues$selector <- NULL
+  rvalues$subpopulazioa <- NULL
+  rvalues$gurutzaketa.hautaketa <- NULL
+  rvalues$gurutzaketa <- NULL
+  rvalues$mutazioa <- NULL
+  rvalues$alfabeto <- NULL
+  rvalues$initial.solution <- NULL
+  rvalues$matrix <- NULL
+  rvalues$initial.population <- NULL
+  
+  observeEvent(input$sor.inst,{
+    if(input$Problema == "Travelling salesman problem"){
+      if(!is.null(input$tam.mat)){
+        cmatrix <- matrix(runif(input$tam.mat ^ 2), ncol = input$tam.mat)
+        rvalues$matrix<-cmatrix
+        rvalues$problema <- tspProblem(cmatrix)
+        showNotification("Problema ondo sortu da!")
+      }
+      
+    }else{
+      if(!is.null(input$alfabeto)&&!is.null(input$ireki.fitx)){
+        a<-input$alfabeto
+        aa<-strsplit(a," ")
+        alpha<-aa[[1]]
+        rvalues$alfabeto<-alpha
+        fi<-input$ireki.fitx
+        d <- read.table(fi$datapath, header = TRUE, sep = " ")
+        cmatrix<-as.matrix(d)
+        rvalues$matrix<-cmatrix
+        if(input$Problema == "Closest String Problem"){
+          rvalues$problema <- closestStringProblem(cmatrix,alpha)
+        }else{
+          rvalues$problema <- farthestStringProblem(cmatrix,alpha)
+        }
+        showNotification("Problema ondo sortu da!")
+      }
+      
+    }
+  }
+  )
+  
+  observeEvent(input$sor.alg,{
+    if(input$Algoritmoa == "Bilaketa lokala"){
+      if(input$Problema == "Travelling salesman problem"){
+        initial.solution <- randomPermutation(input$tam.mat)
+        rvalues$initial.solution<-initial.solution
+      }else{
+        initial.solution <- factor(replicate(ncol(rvalues$matrix), paste(sample(rvalues$alfabeto, 1, replace = TRUE), collapse = "")))
+        rvalues$initial.solution<-initial.solution
+      }
+      switch (input$ingurunea,
+              "swapNeighborhood" = h.ngh <- swapNeighborhood(base = initial.solution),
+              "exchangeNeighborhood" = h.ngh <- exchangeNeighborhood(base = initial.solution),
+              "insertNeighborhood" = h.ngh <- insertNeighborhood(base = initial.solution),
+              "hammingNeighborhood" = h.ngh <-hammingNeighborhood(base = initial.solution)
       )
-    )
+      rvalues$ingurunea <- h.ngh
+    }else{##Algoritmo genetikoa
+      if(input$Problema == "Travelling salesman problem"){
+        n.pop.small <- input$tam.mat
+        createRndSolution <- function(x) {
+          sol <- randomPermutation(input$tam.mat)
+        }
+        pop.small <- lapply(1:n.pop.small, FUN=createRndSolution)
+        rvalues$initial.population<-pop.small
+        
+        
+        }else{
+        n.pop.small <- ncol(rvalues$matrix)
+        levels <- rvalues$alfabeto
+        createRndSolution <- function(x) {
+          sol <- factor(replicate(ncol(rvalues$matrix), paste(sample(rvalues$alfabeto, 1, replace = TRUE), collapse = "")))
+        }
+        pop.small <- lapply(1:n.pop.small, FUN=createRndSolution)
+        rvalues$initial.population<-pop.small
+
+      }
+      switch (input$selectSubpopulation,
+              "elitistSelection" = rvalues$selectSubpopulation <- elitistSelection,
+              "tournamentSelection" = rvalues$selectSubpopulation <- tournamentSelection, 
+              "rouletteSelection" = rvalues$selectSubpopulation <- rouletteSelection
+      ) 
+      
+      switch (input$selectCross,
+              "elitistSelection" = rvalues$selectCross <- elitistSelection,
+              "tournamentSelection" = rvalues$selectCross <- tournamentSelection, 
+              "rouletteSelection" = rvalues$selectCross <- rouletteSelection
+      )
+      
+      switch (input$cross,
+              "orderCrossover" = rvalues$cross <- orderCrossover,
+              "kPointCrossover" = rvalues$cross <- kPointCrossover
+              
+      )
+      
+      switch (input$mutate,
+              "swapMutation" = rvalues$mutate <- swapMutation,
+              "factorMutation" = rvalues$mutate <- factorMutation
+      )
+      
+    }
+  }
+  )
+  
+  observeEvent(input$run,{
+    args<-list()
+    #if(!is.null(rvalues$problema)&&!is.null(rvalues$initial.solution)&&!is.null(rvalues$ingurunea)){
+    if(input$Algoritmoa == "Bilaketa lokala"){
+      args$evaluate         <- rvalues$problema$evaluate
+      args$initial.solution <- rvalues$initial.solution
+      args$neighborhood     <- rvalues$ingurunea
+      if(input$selector =="greedy"){
+        args$selector         <- greedySelector
+      }else{
+        args$selector         <- firstImprovementSelector
+      }
+      args$resources <- cResource(evaluations = 100)
+      bls <- do.call(basicLocalSearch, args)
+      print("amaituta")
+    }else{
+      args$evaluate <- rvalues$problema$evaluate
+      args$initial.population <- rvalues$initial.population
+      args$selectSubpopulation <- rvalues$selectSubpopulation
+      if(!is.null(input$use.ranking)){
+        if(input$use.ranking=="Bai"){
+          args$use.rankings<- TRUE
+        }else{
+          args$use.rankings<- FALSE
+        }
+      }
+      args$selection.ratio<-input$selection.ratio
+      
+      args$selectCross <- rvalues$selectCross
+      args$mutate <- rvalues$mutate
+      args$ratio       <- input$ratio
+      args$mutation.rate        <- input$mutation.rate
+      args$cross                <- rvalues$cross
+      if(input$Problema!="Travelling salesman problem"){
+        args$k<-input$cross.k
+      }
+      if(!is.null(args$evaluate)&&!is.null(args$initial.population)&&!is.null(args$selectSubpopulation)&&
+         !is.null(args$selection.ratio)&&!is.null(args$selectCross)&&!is.null(args$mutate)&&!is.null(args$ratio)&&
+         !is.null(args$mutation.rate)&&!is.null(args$cross)){
+      
+        args$resources <- cResource(evaluations = input$eb.kopurua, time = input$denbora,iterations = input$it.kopurua)
+        
+        bls<-do.call(basicGeneticAlgorithm,args)
+        print("amaituta")
+        
+      }else{
+        print(args$initial.population)
+      }
+      
+    }
+    #}
+    # else{
+    #   #print(rvalues$problema)
+    #   #print(rvalues$initial.solution)
+    #   #print(rvalues$ingurunea)
+    #   # 
+    # }
+    
   })
+  
+  
+  
+  
+  
+  
+  
+  output$oni<-renderText({
+    gettext(
+      #ingurunea()
+    )
+    
+  })
+  
+  
+  # output$problemaEzaugarriak <- renderText({
+  #   if (is.null(input$Problema))
+  #     return()
+  #   
+  #   switch (
+  #     input$Problema,
+  #     "Travelling salesman problem" = paste(
+  #       "This function generates an evaluation function associated with a TSP problem"
+  #     ),
+  #     "Closest String Problem"      = paste(
+  #       "Hainbat sekuentzia emanik, gertueneko beste sekuentzia bat itzultzen du."
+  #     ),
+  #     "Farthest String Problem"     = paste(
+  #       "Hainbat sekuentzia emanik, hurruneneko beste sekuentzia bat itzultzen du."
+  #     )
+  #   )
+  # })
   
   
   ###Problema kodea#
   
-  output$problemaKodea <- renderText({
-    if (input$Problema == "Travelling salesman problem") {
-      cmatrix <- matrix(runif(100), ncol = 10)
-      tsp <- tspProblem(cmatrix)
-      paste(tsp[1])
-    }
-    
-    else if (input$Problema == "Closest String Problem") {
-      cmatrix <-
-        matrix(
-          data = c('a', 'a', 'a', 'a', 'a', 'a'),
-          ncol = 2,
-          byrow = TRUE
-        )
-      csp <- closestStringProblem(cmatrix, c('a'))
-      paste(csp[1])
-    }
-    
-    else if (input$Problema == "Farthest String Problem") {
-      cmatrix <-
-        matrix(
-          data = c('a', 'a', 'a', 'a', 'a', 'a'),
-          ncol = 2,
-          byrow = TRUE
-        )
-      fsp <- farthestStringProblem(cmatrix, c('a'))
-      paste(fsp[1])
-    }
-    
-  })
+  # output$problemaKodea <- renderText({
+  #   if (input$Problema == "Travelling salesman problem") {
+  #     cmatrix <- matrix(runif(100), ncol = 10)
+  #     tsp <- tspProblem(cmatrix)
+  #     paste(tsp[1])
+  #   }
+  #   
+  #   else if (input$Problema == "Closest String Problem") {
+  #     cmatrix <-
+  #       matrix(
+  #         data = c('a', 'a', 'a', 'a', 'a', 'a'),
+  #         ncol = 2,
+  #         byrow = TRUE
+  #       )
+  #     csp <- closestStringProblem(cmatrix, c('a'))
+  #     paste(csp[1])
+  #   }
+  #   
+  #   else if (input$Problema == "Farthest String Problem") {
+  #     cmatrix <-
+  #       matrix(
+  #         data = c('a', 'a', 'a', 'a', 'a', 'a'),
+  #         ncol = 2,
+  #         byrow = TRUE
+  #       )
+  #     fsp <- farthestStringProblem(cmatrix, c('a'))
+  #     paste(fsp[1])
+  #   }
+  #   
+  # })
   
   
   ###Problema Instantziak###
@@ -68,24 +249,56 @@ shinyServer(function(input, output) {
     switch (
       input$Problema,
       "Travelling salesman problem" = tags$div(
-        # eskuz.matrizea.tsp,
-        # sortu.matrizea.tsp,
-        # tags$h3("edo"),
-        tamaina.matrizea
-        # ausazko.matrizea
+        numericInput(
+          inputId = "tam.mat",
+          label = "n matrize zabalera sartuz sortu ausazko matrizea",
+          value = 4, 
+          min = 4
+        ),
+        actionButton(
+          inputId = "sor.inst",
+          label = "Baieztatu"
+        )
+        
       ),
       "Closest String Problem" = tags$div(
-        alfabeto.csp,
-        file.input.csp,
-        sortu.matrizea.str,
-        tags$h3("Alfabetoa: ")),
+        textInput(
+          inputId = "alfabeto",
+          label = "Sartu alfabetoa",
+          placeholder = "a b c ..."
+        ),
+        fileInput(
+          inputId = "ireki.fitx",
+          label = "Ireki zure fitxategia"
+        ),
+        actionButton(
+          inputId = "sor.inst",
+          label = "Baieztatu"
+        )
+      ),
       "Farthest String Problem" = tags$div(
-        alfabeto.fsp,
-        file.input.fsp,
-        sortu.matrizea.str,
-        tags$h3("Alfabetoa: "))
+        textInput(
+          inputId = "alfabeto",
+          label = "Sartu alfabetoa",
+          placeholder = "a b c ..."
+        ),
+        fileInput(
+          inputId = "ireki.fitx",
+          label = "Ireki zure fitxategia"
+        ),
+        actionButton(
+          inputId = "sor.inst",
+          label = "Baieztatu"
+        )
+      )
     )
     
+  })
+  
+  output$matrize <- renderTable({
+    if (input$Problema == "Travelling salesman problem") {
+      rvalues$matrix
+    }
   })
   
   
@@ -100,20 +313,20 @@ shinyServer(function(input, output) {
   
   ###Algoritmo ezaugarriak###
   
-  output$algoritmoEzaugarriak <- renderText({
-    if (input$Algoritmoa == "Bilaketa lokala") {
-      paste(
-        "This function generates an evaluation, validity and correction functions associated with a classical graph coloring problem"
-      )
-    }
-    else if (input$Algoritmoa == "Algoritmo genetikoa") {
-      paste(
-        "This function generates an evaluation, validity and correction functions associated with a classical knapsack problem"
-      )
-    }
-    
-  })
-  
+  # output$algoritmoEzaugarriak <- renderText({
+  #   if (input$Algoritmoa == "Bilaketa lokala") {
+  #     paste(
+  #       "This function generates an evaluation, validity and correction functions associated with a classical graph coloring problem"
+  #     )
+  #   }
+  #   else if (input$Algoritmoa == "Algoritmo genetikoa") {
+  #     paste(
+  #       "This function generates an evaluation, validity and correction functions associated with a classical knapsack problem"
+  #     )
+  #   }
+  #   
+  # })
+  # 
   
   
   
@@ -128,19 +341,54 @@ shinyServer(function(input, output) {
               
               switch (input$Problema,
                       "Travelling salesman problem" = tags$div(
-                        ingurunea.tsp,
-                        selector
-                        # restart.estrategia
+                        selectInput(
+                          inputId = "ingurunea",
+                          label = "Hautatu ingurunea: ",
+                          choices = c("swapNeighborhood","exchangeNeighborhood", "insertNeighborhood")
+                        ),
+                        selectInput(
+                          inputId = "selector",
+                          label = "Hautatu selector: ",
+                          choices = c("greedy","first improvement")
+                        ),
+                        actionButton(
+                          inputId = "sor.alg",
+                          label = "Baieztatu"
+                        )
                       ),
                       "Closest String Problem" = tags$div(
-                        ingurunea.str,
-                        selector
+                        selectInput(
+                          inputId = "ingurunea",
+                          label = "Hautatu ingurunea: ",
+                          choices = c("hammingNeighborhood")
+                        ),
+                        selectInput(
+                          inputId = "selector",
+                          label = "Hautatu selector: ",
+                          choices = c("greedy","first improvement")
+                        ),
+                        actionButton(
+                          inputId = "sor.alg",
+                          label = "Baieztatu"
+                        )
                         
                       ),
                       
                       "Farthest String Problem" = tags$div( 
-                        ingurunea.str,
-                        selector
+                        selectInput(
+                          inputId = "ingurunea",
+                          label = "Hautatu ingurunea: ",
+                          choices = c("hammingNeighborhood")
+                        ),
+                        selectInput(
+                          inputId = "selector",
+                          label = "Hautatu selector: ",
+                          choices = c("greedy","first improvement")
+                        ),
+                        actionButton(
+                          inputId = "sor.alg",
+                          label = "Baieztatu"
+                        )
                       )
                       
               )
@@ -149,273 +397,167 @@ shinyServer(function(input, output) {
               if (is.null(input$Algoritmoa))
                 return()
               
-              switch (input$Problema,
-                      "Travelling salesman problem" = tags$div(
-                        populazio.tamaina,
-                        subpopulazioa,
-                        selection.ratio,
-                        gurutzaketa.aukeratu,
-                        gurutzaketa.tsp,
-                        mutazioa.tsp,
-                        ratio,
-                        mutation.rate
-                      ),
-                      "Closest String Problem" = tags$div(
-                        populazio.tamaina,
-                        subpopulazioa,
-                        selection.ratio,
-                        gurutzaketa.aukeratu,
-                        gurutzaketa.str,
-                        cross.k,
-                        mutazioa.str,
-                        ratio,
-                        mutation.rate
-                      ),
-                      
-                      "Farthest String Problem" = tags$div(
-                        populazio.tamaina,
-                        subpopulazioa,
-                        selection.ratio,
-                        gurutzaketa.aukeratu,
-                        gurutzaketa.str,
-                        cross.k,
-                        mutazioa.str,
-                        ratio,
-                        mutation.rate
-                      )
-                      
-              )
+              if (input$Problema == "Travelling salesman problem"){ tags$div(
+                numericInput(
+                  inputId = "populazio.tamaina",
+                  label = "Hasierako populazioa hausaz sortzen den arren, populazioaren tamaina sartu:",
+                  value = 100
+                ),
+                selectInput(
+                  inputId = "selectSubpopulation",
+                  label = "Hautatu subpopulazioaren hautaketa: ",
+                  choices = c("elitistSelection", "tournamentSelection", "rouletteSelection")
+                ),
+                sliderInput(
+                  inputId = "selection.ratio",
+                  label = "Selection ratio",
+                  min = 0,
+                  max = 1,
+                  value = 0.5
+                ),
+                selectInput(
+                  inputId = "selectCross",
+                  label = "Hautatu gurutzaketaren hautaketa: ",
+                  choices = c("elitistSelection", "tournamentSelection", "rouletteSelection")
+                ),
+                selectInput(
+                  inputId = "cross",
+                  label = "Hautatu gurutzaketa: ",
+                  choices = c("orderCrossover")
+                ),
+                selectInput(
+                  inputId = "mutate",
+                  label = "Mutazioa",
+                  choices = c("swapMutation")
+                ),
+                sliderInput(
+                  inputId = "ratio",
+                  label = "Ratio",
+                  min = 0,
+                  max = 1,
+                  value = 0.5
+                ),
+                sliderInput(
+                  inputId = "mutation.rate",
+                  label = "Mutation Rate",
+                  min = 0,
+                  max = 1,
+                  value = 0.5
+                ),
+                actionButton(
+                  inputId = "sor.alg",
+                  label = "Baieztatu"
+                )
+              )}else{tags$div(
+                  numericInput(
+                    inputId = "populazio.tamaina",
+                    label = "Hasierako populazioa hausaz sortzen den arren, populazioaren tamaina sartu:",
+                    value = 100
+                  ),
+                  selectInput(
+                    inputId = "selectSubpopulation",
+                    label = "Hautatu subpopulazioaren hautaketa: ",
+                    choices = c("elitistSelection", "tournamentSelection", "rouletteSelection")
+                  ),
+                  sliderInput(
+                    inputId = "selection.ratio",
+                    label = "Selection ratio",
+                    min = 0,
+                    max = 1,
+                    value = 0.5
+                  ),
+                  selectInput(
+                    inputId = "selectCross",
+                    label = "Hautatu gurutzaketaren hautaketa: ",
+                    choices = c("elitistSelection", "tournamentSelection", "rouletteSelection")
+                  ),
+                  selectInput(
+                    inputId = "cross",
+                    label = "Hautatu gurutzaketa: ",
+                    choices = c("kPointCrossover")
+                  ),
+                  numericInput(
+                    inputId = "cross.k",
+                    label = "K:",
+                    value = 2,
+                    min = 1
+                  ),
+                  selectInput(
+                    inputId = "mutate",
+                    label = "Mutazioa",
+                    choices = c("factorMutation")
+                  ),
+                  sliderInput(
+                    inputId = "ratio",
+                    label = "Ratio",
+                    min = 0,
+                    max = 1,
+                    value = 0.5
+                  ),
+                  sliderInput(
+                    inputId = "mutation.rate",
+                    label = "Mutation Rate",
+                    min = 0,
+                    max = 1,
+                    value = 0.5
+                  ),
+                  actionButton(
+                    inputId = "sor.alg",
+                    label = "Baieztatu"
+                  )
+                )
+              }
+              
             }
     )
     
   })
   
   output$ui.ranking<-renderUI({
+    if (is.null(input$Algoritmoa))
+      return()
     
-    if(input$Algoritmoa=="Algoritmo genetikoa" && input$subpopulazioa=="rouletteSelection"){
-      use.ranking
-    }else return()
+    if (is.null(input$selectSubpopulation))
+      return()
     
-  })
-  
-  
-  
-  
-  
-  
-  
-  # observeEvent(input$aus.mat.tsp, {
-  output$matrize <- renderTable({
-    if (input$Problema == "Travelling salesman problem") {
-      n <- input$tam.mat
-      cmatrix <- matrix(runif(n ^ 2), ncol = n)
-      cmatrix
+    if(input$Algoritmoa=="Algoritmo genetikoa" && input$selectSubpopulation=="rouletteSelection"){
+      selectInput(
+        inputId = "use.ranking",
+        label = "Rangkinak erabili nahi dituzu?",
+        choices = c("Bai","Ez")
+      )
     }
+    
   })
-  # })
   
-  # observeEvent(input$sor.mat.tsp, {
-  #   output$matrize <- renderTable({
-  #     if (input$Problema == "Travelling salesman problem") {
-  #       data <- input$mat.tsp
-  #       data <- strsplit(data, split = " ")
-  #       data <- as.numeric(unlist(data))
-  #       cmatrix <-
-  #         matrix(
-  #           data = data,
-  #           nrow = sqrt(length(data)),
-  #           ncol = sqrt(length(data)),
-  #           byrow = TRUE
-  #         )
-  #       cmatrix
-  #     }
-  #   })
-  # })
-  # 
-  # output$matrize <- renderTable({
-  #   if (input$Problema == "Closest String Problem") {
-  #     fi <- input$ireki.fitx.csp
+  # output$algoritmoKodea <- renderText({
+  #   if (input$Problema == "Grafoa koloreztatzearen problema") {
+  #     library("igraph")
+  #     library("metaheuR")
+  #     n <- 10
+  #     rnd.graph <- random.graph.game(n, p.or.m = 0.5)
+  #     gcol.problem <- graphColoringProblem(rnd.graph)
+  #     paste(gcol.problem[1])
   #   }
-  #   else if (input$Problema == "Farthest String Problem"){
-  #     fi <- input$ireki.fitx.fsp
-  #   }else{return(NULL)}
-  #   if (is.null(fi)){
-  #     return(NULL)}
-  #   d <- read.table(fi$datapath, header = TRUE, sep = " ")
-  #   cmatrix <- as.matrix(d)
-  #   cmatrix
+  #   else if (input$Problema == "Motxilaren problema") {
+  #     n <- 100
+  #     w <- runif(n)
+  #     v <- runif(n)
+  #     l <- sum(w[runif(n) > 0.5])
+  #     knp <- knapsackProblem(w, v, l)
+  #     paste(knp[1])
+  #   }
   #   
+  #   else if (input$Problema == "Garraio problema") {
+  #     cmatrix <- matrix(runif(100), ncol = 10)
+  #     tsp <- tspProblem(cmatrix)
+  #     paste(tsp[1])
+  #   }
   # })
-  # 
-  output$alfabeto<-renderText({
-    if (input$Problema == "Closest String Problem") {
-      alph <- input$alfabeto.csp
-    }
-    else if (input$Problema == "Farthest String Problem"){
-      alph<- input$alfabeto.fsp
-    }else{return(NULL)}
-    if (is.null(alph)){
-      return(NULL)}
-    alph
-  })
-  
-  output$algoritmoKodea <- renderText({
-    if (input$Problema == "Grafoa koloreztatzearen problema") {
-      library("igraph")
-      library("metaheuR")
-      n <- 10
-      rnd.graph <- random.graph.game(n, p.or.m = 0.5)
-      gcol.problem <- graphColoringProblem(rnd.graph)
-      paste(gcol.problem[1])
-    }
-    else if (input$Problema == "Motxilaren problema") {
-      n <- 100
-      w <- runif(n)
-      v <- runif(n)
-      l <- sum(w[runif(n) > 0.5])
-      knp <- knapsackProblem(w, v, l)
-      paste(knp[1])
-    }
-    
-    else if (input$Problema == "Garraio problema") {
-      cmatrix <- matrix(runif(100), ncol = 10)
-      tsp <- tspProblem(cmatrix)
-      paste(tsp[1])
-    }
-    
-    
-    
-  })
   
   output$plotProgresioa <- renderPlot({
     plot(x = 1, y = 1)
     
   })
-  
-  
-  output$oni <- renderText({
-    args<-list()
-    
-    if (is.null(input$ireki.fitx.csp)){
-      data <- c('a','c','g','a','t','a','g','g','g')
-      cmatrix<-matrix(data,nrow = 3,byrow = TRUE)
-    }
-    else{
-    fi <- input$ireki.fitx.csp
-    d <- read.table(fi$datapath, header = TRUE, sep = " ")
-    cmatrix <- as.matrix(d)
-    }
-    a <- input$alfabeto.csp
-    ab <- strsplit(a, " ")
-    alph <- ab[[1]]
-    
-    
-    csp <- closestStringProblem(cmatrix,alph)
-     n<-ncol(cmatrix)
-     initial.solution <- factor(replicate(n, paste(sample(alph, 1, replace = TRUE), collapse = "")))
-     
-     args$evaluate <- csp$evaluate
-     
-     if (is.null(input$ingurunea.csp))
-       return()
-     switch (input$ingurunea.csp,
-             "hammingNeighborhood" = h.ngh <- hammingNeighborhood(base = initial.solution)
-     )
-     args$initial.solution <- initial.solution
-     args$neighborhood <- h.ngh
-     if (is.null(input$selector))
-       return()
-     
-  
-     
-     switch (input$selector,
-             "greedy" =  args$selector<-greedySelector ,
-             "first improvement" = args$selector<-firstImprovementSelector
-     )
-     sol<-do.call(basicLocalSearch,args)
-     
-     getSolution(sol)
-    
-  })
-  
-  
-  # output$oni<-renderText({
-  #   if (is.null(input$Algoritmoa))
-  #     return()
-  #   switch (input$Algoritmoa,
-  #           "Bilaketa lokala" = {
-  #             if (is.null(input$Problema))
-  #               return()
-  #             switch (input$Problema,
-  #                     "Travelling salesman problem" = {
-  #                       args<-list()
-  #                       tam.mat<-input$tam.mat
-  #                       cmatrix <- matrix(runif(tam.mat^2), ncol=tam.mat)
-  #                       tsp <- tspProblem(cmatrix)
-  #                       initial.solution <- randomPermutation(tam.mat)
-  #                       
-  #                       args$evaluate <- tsp$evaluate
-  #                       
-  #                       if (is.null(input$ingurunea.tsp))
-  #                         return()
-  #                       switch (input$ingurunea.tsp,
-  #                               "swapNeighborhood" = h.ngh <- swapNeighborhood(base = initial.solution),
-  #                               "exchangeNeighborhood" = h.ngh <- exchangeNeighborhood(base = initial.solution),
-  #                               "insertNeighborhood" = h.ngh <- insertNeighborhood(base = initial.solution)
-  #                       )
-  #                       args$initial.solution <- initial.solution
-  #                       args$neighborhood <- h.ngh
-  #                       if (is.null(input$selector))
-  #                         return()
-  #                       
-  #                       
-  #                       
-  #                       switch (input$selector,
-  #                               "greedy" =  args$selector<-greedySelector ,
-  #                               "first improvement" = args$selector<-firstImprovementSelector
-  #                       )
-  #                       sol<-do.call(basicLocalSearch,args)
-  #                       
-  #                       getSolution(sol)@permutation
-  #                       
-  #                     },
-  #                     "Closest String Problem" = {
-  #                       
-  #                        
-  #                     },
-  #                     "Farthest String Problem" = {
-  #                       
-  #                     }
-  #             )
-  #             
-  #             
-  #           },
-  #           "Algoritmo genetikoa" = {
-  #             if (is.null(input$Problema))
-  #               return()
-  #             switch (input$Problema,
-  #                     "Travelling salesman problem" = {
-  #                       args<-list()
-  #                       tam.mat<-input$tam.mat
-  #                       cmatrix <- matrix(runif(tam.mat^2), ncol=tam.mat)
-  #                       tsp <- tspProblem(cmatrix)
-  #                     },
-  #                     "Closest String Problem" = {},
-  #                     "Farthest String Problem" = {}
-  #             )        
-  #             sol<-do.call(basicGeneticAlgorithm,args)
-  #           }
-  #   )
-  #   
-  #   
-  #   
-  #   
-  #   
-  #   
-  #   
-  #   
   # })
-  
-  
-  
 })

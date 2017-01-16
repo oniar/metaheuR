@@ -9,7 +9,6 @@
 
 library(shiny)
 library(metaheuR)
-source('lag.R')
 source('instantziak.R')
 source('algoritmoa.R')
 source('exekuzioa.R')

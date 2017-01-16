@@ -3,20 +3,32 @@ Exekuzioa <- tabPanel("Exekuzioa",
                         fluidRow(sidebarPanel(
                           tags$h3("Gelditzeko irizpideak: "),
                           fluidRow(column(width = 4,
-                            denbora
+                                          numericInput(
+                                            "denbora",
+                                            label = "Denbora: ",
+                                            value = 0
+                                          )
+                                          
                           ),
                           column(width = 4, 
-                            it.kopurua
+                                 numericInput("it.kopurua",
+                                              label = "Iterazioak: ",
+                                              value = 0)
+                                 
                           ),
                           column(width = 4, 
-                            eb.kopurua
+                                 numericInput("eb.kopurua",
+                                              label = "Ebaluazioak: ",
+                                              value = 0)
                           )),
                           fluidRow(column(width = 4,offset = 4,
-                            run
+                                          actionButton("run",
+                                                       label = "Run")
+                                          
                           ))
                         )),
                         fluidRow(plotOutput("plotProgresioa"))
                       )),
                       column(4, mainPanel(
-                        tags$h3("Code: "), verbatimTextOutput("algoritmoKodea"), textOutput("oni")
+                        tags$h3("Code: "), verbatimTextOutput("algoritmoKodea"), textOutput("oni"),textOutput("onin")
                       )))

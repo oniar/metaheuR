@@ -5,45 +5,49 @@ library(metaheuR)
 
 shinyServer(function(input, output) {
   
-  rvalues<-reactiveValues()
+  rvalues                     <-reactiveValues()
   
-  rvalues$problema <- NULL
-  rvalues$ingurunea <- NULL
-  rvalues$selector <- NULL
-  rvalues$subpopulazioa <- NULL
-  rvalues$gurutzaketa.hautaketa <- NULL
-  rvalues$gurutzaketa <- NULL
-  rvalues$mutazioa <- NULL
-  rvalues$alfabeto <- NULL
-  rvalues$initial.solution <- NULL
-  rvalues$matrix <- NULL
-  rvalues$initial.population <- NULL
+  rvalues$problema            <- NULL
+  rvalues$ingurunea           <- NULL
+  rvalues$alfabeto            <- NULL
+  rvalues$initial.solution    <- NULL
+  rvalues$matrix              <- NULL
+  rvalues$initial.population  <- NULL
+  rvalues$selectSubpopulation <- NULL
+  rvalues$selectCross         <- NULL
+  rvalues$cross               <- NULL
+  rvalues$mutate              <- NULL
+  rvalues$emaitza             <- NULL
+  
   
   observeEvent(input$sor.inst,{
     if(input$Problema == "Travelling salesman problem"){
       if(!is.null(input$tam.mat)){
-        cmatrix <- matrix(runif(input$tam.mat ^ 2), ncol = input$tam.mat)
-        rvalues$matrix<-cmatrix
-        rvalues$problema <- tspProblem(cmatrix)
+        rvalues$matrix<-matrix(runif(input$tam.mat ^ 2), ncol = input$tam.mat)
+        rvalues$problema <- tspProblem(rvalues$matrix)
         showNotification("Problema ondo sortu da!")
+      }else{
+        showNotification("Matrizearen tamaina falta da")
       }
       
     }else{
-      if(!is.null(input$alfabeto)&&!is.null(input$ireki.fitx)){
+      if(!(input$alfabeto=="")&&!is.null(input$ireki.fitx)){
+        print(input$alfabeto)
         a<-input$alfabeto
         aa<-strsplit(a," ")
         alpha<-aa[[1]]
         rvalues$alfabeto<-alpha
         fi<-input$ireki.fitx
         d <- read.table(fi$datapath, header = TRUE, sep = " ")
-        cmatrix<-as.matrix(d)
-        rvalues$matrix<-cmatrix
+        rvalues$matrix<-as.matrix(d)
         if(input$Problema == "Closest String Problem"){
-          rvalues$problema <- closestStringProblem(cmatrix,alpha)
+          rvalues$problema <- closestStringProblem(rvalues$matrix,alpha)
         }else{
-          rvalues$problema <- farthestStringProblem(cmatrix,alpha)
+          rvalues$problema <- farthestStringProblem(rvalues$matrix,alpha)
         }
         showNotification("Problema ondo sortu da!")
+      }else{
+         showNotification("Errorea gertatu da!")
       }
       
     }
@@ -53,17 +57,15 @@ shinyServer(function(input, output) {
   observeEvent(input$sor.alg,{
     if(input$Algoritmoa == "Bilaketa lokala"){
       if(input$Problema == "Travelling salesman problem"){
-        initial.solution <- randomPermutation(input$tam.mat)
-        rvalues$initial.solution<-initial.solution
+        rvalues$initial.solution<-randomPermutation(input$tam.mat)
       }else{
-        initial.solution <- factor(replicate(ncol(rvalues$matrix), paste(sample(rvalues$alfabeto, 1, replace = TRUE), collapse = "")))
-        rvalues$initial.solution<-initial.solution
+        rvalues$initial.solution<-factor(replicate(ncol(rvalues$matrix), paste(sample(rvalues$alfabeto, 1, replace = TRUE), collapse = "")))
       }
       switch (input$ingurunea,
-              "swapNeighborhood" = h.ngh <- swapNeighborhood(base = initial.solution),
-              "exchangeNeighborhood" = h.ngh <- exchangeNeighborhood(base = initial.solution),
-              "insertNeighborhood" = h.ngh <- insertNeighborhood(base = initial.solution),
-              "hammingNeighborhood" = h.ngh <-hammingNeighborhood(base = initial.solution)
+              "swapNeighborhood" = h.ngh <- swapNeighborhood(base = rvalues$initial.solution),
+              "exchangeNeighborhood" = h.ngh <- exchangeNeighborhood(base = rvalues$initial.solution),
+              "insertNeighborhood" = h.ngh <- insertNeighborhood(base = rvalues$initial.solution),
+              "hammingNeighborhood" = h.ngh <-hammingNeighborhood(base = rvalues$initial.solution)
       )
       rvalues$ingurunea <- h.ngh
     }else{##Algoritmo genetikoa
@@ -76,7 +78,7 @@ shinyServer(function(input, output) {
         rvalues$initial.population<-pop.small
         
         
-        }else{
+      }else{
         n.pop.small <- ncol(rvalues$matrix)
         levels <- rvalues$alfabeto
         createRndSolution <- function(x) {
@@ -84,7 +86,7 @@ shinyServer(function(input, output) {
         }
         pop.small <- lapply(1:n.pop.small, FUN=createRndSolution)
         rvalues$initial.population<-pop.small
-
+        
       }
       switch (input$selectSubpopulation,
               "elitistSelection" = rvalues$selectSubpopulation <- elitistSelection,
@@ -115,7 +117,6 @@ shinyServer(function(input, output) {
   
   observeEvent(input$run,{
     args<-list()
-    #if(!is.null(rvalues$problema)&&!is.null(rvalues$initial.solution)&&!is.null(rvalues$ingurunea)){
     if(input$Algoritmoa == "Bilaketa lokala"){
       args$evaluate         <- rvalues$problema$evaluate
       args$initial.solution <- rvalues$initial.solution
@@ -126,7 +127,7 @@ shinyServer(function(input, output) {
         args$selector         <- firstImprovementSelector
       }
       args$resources <- cResource(evaluations = 100)
-      bls <- do.call(basicLocalSearch, args)
+      rvalues$emaitza <- do.call(basicLocalSearch, args)
       print("amaituta")
     }else{
       args$evaluate <- rvalues$problema$evaluate
@@ -139,8 +140,8 @@ shinyServer(function(input, output) {
           args$use.rankings<- FALSE
         }
       }
-      args$selection.ratio<-input$selection.ratio
       
+      args$selection.ratio<-input$selection.ratio
       args$selectCross <- rvalues$selectCross
       args$mutate <- rvalues$mutate
       args$ratio       <- input$ratio
@@ -152,10 +153,10 @@ shinyServer(function(input, output) {
       if(!is.null(args$evaluate)&&!is.null(args$initial.population)&&!is.null(args$selectSubpopulation)&&
          !is.null(args$selection.ratio)&&!is.null(args$selectCross)&&!is.null(args$mutate)&&!is.null(args$ratio)&&
          !is.null(args$mutation.rate)&&!is.null(args$cross)){
-      
+        
         args$resources <- cResource(evaluations = input$eb.kopurua, time = input$denbora,iterations = input$it.kopurua)
         
-        bls<-do.call(basicGeneticAlgorithm,args)
+        rvalues$emaitza<-do.call(basicGeneticAlgorithm,args)
         print("amaituta")
         
       }else{
@@ -449,63 +450,63 @@ shinyServer(function(input, output) {
                   label = "Baieztatu"
                 )
               )}else{tags$div(
-                  numericInput(
-                    inputId = "populazio.tamaina",
-                    label = "Hasierako populazioa hausaz sortzen den arren, populazioaren tamaina sartu:",
-                    value = 100
-                  ),
-                  selectInput(
-                    inputId = "selectSubpopulation",
-                    label = "Hautatu subpopulazioaren hautaketa: ",
-                    choices = c("elitistSelection", "tournamentSelection", "rouletteSelection")
-                  ),
-                  sliderInput(
-                    inputId = "selection.ratio",
-                    label = "Selection ratio",
-                    min = 0,
-                    max = 1,
-                    value = 0.5
-                  ),
-                  selectInput(
-                    inputId = "selectCross",
-                    label = "Hautatu gurutzaketaren hautaketa: ",
-                    choices = c("elitistSelection", "tournamentSelection", "rouletteSelection")
-                  ),
-                  selectInput(
-                    inputId = "cross",
-                    label = "Hautatu gurutzaketa: ",
-                    choices = c("kPointCrossover")
-                  ),
-                  numericInput(
-                    inputId = "cross.k",
-                    label = "K:",
-                    value = 2,
-                    min = 1
-                  ),
-                  selectInput(
-                    inputId = "mutate",
-                    label = "Mutazioa",
-                    choices = c("factorMutation")
-                  ),
-                  sliderInput(
-                    inputId = "ratio",
-                    label = "Ratio",
-                    min = 0,
-                    max = 1,
-                    value = 0.5
-                  ),
-                  sliderInput(
-                    inputId = "mutation.rate",
-                    label = "Mutation Rate",
-                    min = 0,
-                    max = 1,
-                    value = 0.5
-                  ),
-                  actionButton(
-                    inputId = "sor.alg",
-                    label = "Baieztatu"
-                  )
+                numericInput(
+                  inputId = "populazio.tamaina",
+                  label = "Hasierako populazioa hausaz sortzen den arren, populazioaren tamaina sartu:",
+                  value = 100
+                ),
+                selectInput(
+                  inputId = "selectSubpopulation",
+                  label = "Hautatu subpopulazioaren hautaketa: ",
+                  choices = c("elitistSelection", "tournamentSelection", "rouletteSelection")
+                ),
+                sliderInput(
+                  inputId = "selection.ratio",
+                  label = "Selection ratio",
+                  min = 0,
+                  max = 1,
+                  value = 0.5
+                ),
+                selectInput(
+                  inputId = "selectCross",
+                  label = "Hautatu gurutzaketaren hautaketa: ",
+                  choices = c("elitistSelection", "tournamentSelection", "rouletteSelection")
+                ),
+                selectInput(
+                  inputId = "cross",
+                  label = "Hautatu gurutzaketa: ",
+                  choices = c("kPointCrossover")
+                ),
+                numericInput(
+                  inputId = "cross.k",
+                  label = "K:",
+                  value = 2,
+                  min = 1
+                ),
+                selectInput(
+                  inputId = "mutate",
+                  label = "Mutazioa",
+                  choices = c("factorMutation")
+                ),
+                sliderInput(
+                  inputId = "ratio",
+                  label = "Ratio",
+                  min = 0,
+                  max = 1,
+                  value = 0.5
+                ),
+                sliderInput(
+                  inputId = "mutation.rate",
+                  label = "Mutation Rate",
+                  min = 0,
+                  max = 1,
+                  value = 0.5
+                ),
+                actionButton(
+                  inputId = "sor.alg",
+                  label = "Baieztatu"
                 )
+              )
               }
               
             }
@@ -556,7 +557,8 @@ shinyServer(function(input, output) {
   # })
   
   output$plotProgresioa <- renderPlot({
-    plot(x = 1, y = 1)
+    if(!is.null(rvalues$emaitza))
+      plotProgress(rvalues$emaitza, size=1.1) + labs(y="Evaluation")
     
   })
   # })

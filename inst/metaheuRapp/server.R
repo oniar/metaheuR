@@ -198,57 +198,57 @@ shinyServer(function(input, output) {
   })
   
   
-  # output$problemaEzaugarriak <- renderText({
-  #   if (is.null(input$Problema))
-  #     return()
-  #   
-  #   switch (
-  #     input$Problema,
-  #     "Travelling salesman problem" = paste(
-  #       "This function generates an evaluation function associated with a TSP problem"
-  #     ),
-  #     "Closest String Problem"      = paste(
-  #       "Hainbat sekuentzia emanik, gertueneko beste sekuentzia bat itzultzen du."
-  #     ),
-  #     "Farthest String Problem"     = paste(
-  #       "Hainbat sekuentzia emanik, hurruneneko beste sekuentzia bat itzultzen du."
-  #     )
-  #   )
-  # })
+  output$problemaEzaugarriak <- renderText({
+    if (is.null(input$Problema))
+      return()
+
+    switch (
+      input$Problema,
+      "Travelling salesman problem" = paste(
+        "This function generates an evaluation function associated with a TSP problem"
+      ),
+      "Closest String Problem"      = paste(
+        "Hainbat sekuentzia emanik, gertueneko beste sekuentzia bat itzultzen du."
+      ),
+      "Farthest String Problem"     = paste(
+        "Hainbat sekuentzia emanik, hurruneneko beste sekuentzia bat itzultzen du."
+      )
+    )
+  })
   
   
   ###Problema kodea#
-  
-  # output$problemaKodea <- renderText({
-  #   if (input$Problema == "Travelling salesman problem") {
-  #     cmatrix <- matrix(runif(100), ncol = 10)
-  #     tsp <- tspProblem(cmatrix)
-  #     paste(tsp[1])
-  #   }
-  #   
-  #   else if (input$Problema == "Closest String Problem") {
-  #     cmatrix <-
-  #       matrix(
-  #         data = c('a', 'a', 'a', 'a', 'a', 'a'),
-  #         ncol = 2,
-  #         byrow = TRUE
-  #       )
-  #     csp <- closestStringProblem(cmatrix, c('a'))
-  #     paste(csp[1])
-  #   }
-  #   
-  #   else if (input$Problema == "Farthest String Problem") {
-  #     cmatrix <-
-  #       matrix(
-  #         data = c('a', 'a', 'a', 'a', 'a', 'a'),
-  #         ncol = 2,
-  #         byrow = TRUE
-  #       )
-  #     fsp <- farthestStringProblem(cmatrix, c('a'))
-  #     paste(fsp[1])
-  #   }
-  #   
-  # })
+
+  output$problemaKodea <- renderText({
+    if (input$Problema == "Travelling salesman problem") {
+      cmatrix <- matrix(runif(100), ncol = 10)
+      tsp <- tspProblem(cmatrix)
+      paste(tsp[1])
+    }
+
+    else if (input$Problema == "Closest String Problem") {
+      cmatrix <-
+        matrix(
+          data = c('a', 'a', 'a', 'a', 'a', 'a'),
+          ncol = 2,
+          byrow = TRUE
+        )
+      csp <- closestStringProblem(cmatrix, c('a'))
+      paste(csp[1])
+    }
+
+    else if (input$Problema == "Farthest String Problem") {
+      cmatrix <-
+        matrix(
+          data = c('a', 'a', 'a', 'a', 'a', 'a'),
+          ncol = 2,
+          byrow = TRUE
+        )
+      fsp <- farthestStringProblem(cmatrix, c('a'))
+      paste(fsp[1])
+    }
+
+  })
   
   
   ###Problema Instantziak###
@@ -324,20 +324,26 @@ shinyServer(function(input, output) {
   
   ###Algoritmo ezaugarriak###
   
-  # output$algoritmoEzaugarriak <- renderText({
-  #   if (input$Algoritmoa == "Bilaketa lokala") {
-  #     paste(
-  #       "This function generates an evaluation, validity and correction functions associated with a classical graph coloring problem"
-  #     )
-  #   }
-  #   else if (input$Algoritmoa == "Algoritmo genetikoa") {
-  #     paste(
-  #       "This function generates an evaluation, validity and correction functions associated with a classical knapsack problem"
-  #     )
-  #   }
-  #   
-  # })
-  # 
+  output$algoritmoEzaugarriak <- renderText({
+    if (input$Algoritmoa == "Bilaketa lokala") {
+      paste(
+        "Bilaketa lokalean soluzio bakar bat mantentzen dugu, eta soluzio horretatik abiatuta 
+        beste batera mugitzen saiatuko gara; mugimenduak nola egiten diren desberdintzen du algoritmoak.
+        Metodo honek arazo larri bat du: optimo lokaletantrabaturik gelditzen da."
+      )
+    }
+    else if (input$Algoritmoa == "Algoritmo genetikoa") {
+      paste(
+"Algoritmo hauetan,soluzio bakar bat izan beharrean soluzio-<<populazio>> bat multzo bat,alegia
+mantentzen dugu; iterazioz iterazio populazioari aldaketak egingo
+zaizkio, eta hala horren <<eboluzioa>> ahalbidetzen, eta geroz eta soluzio
+hobeagoak lortzen da. Atal honetan dauden algoritmo askok naturan bilatzen
+dute inspirazioa"
+              )
+    }
+
+  })
+
   
   
   

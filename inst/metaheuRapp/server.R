@@ -32,7 +32,6 @@ shinyServer(function(input, output) {
       
     }else{
       if(!(input$alfabeto=="")&&!is.null(input$ireki.fitx)){
-        print(input$alfabeto)
         a<-input$alfabeto
         aa<-strsplit(a," ")
         alpha<-aa[[1]]
@@ -57,10 +56,16 @@ shinyServer(function(input, output) {
   observeEvent(input$sor.alg,{
     if(input$Algoritmoa == "Bilaketa lokala"){
       if(input$Problema == "Travelling salesman problem"){
-        rvalues$initial.solution<-randomPermutation(input$tam.mat)
+        if(!is.null(input$tam.mat)){
+          rvalues$initial.solution<-randomPermutation(input$tam.mat)
+        }else{
+          showNotification("Instantziak atala ez duzu ongi bete!")
+        }
       }else{
+        if(!is.null(rvalues$matrix))
         rvalues$initial.solution<-factor(replicate(ncol(rvalues$matrix), paste(sample(rvalues$alfabeto, 1, replace = TRUE), collapse = "")))
       }
+      if(!is.null(rvalues$initial.solution)){
       switch (input$ingurunea,
               "swapNeighborhood" = h.ngh <- swapNeighborhood(base = rvalues$initial.solution),
               "exchangeNeighborhood" = h.ngh <- exchangeNeighborhood(base = rvalues$initial.solution),
@@ -68,6 +73,9 @@ shinyServer(function(input, output) {
               "hammingNeighborhood" = h.ngh <-hammingNeighborhood(base = rvalues$initial.solution)
       )
       rvalues$ingurunea <- h.ngh
+      }else{
+        showNotification("Instantziak atala ez duzu ongi bete!")
+      }
     }else{##Algoritmo genetikoa
       if(input$Problema == "Travelling salesman problem"){
         n.pop.small <- input$tam.mat
@@ -77,8 +85,8 @@ shinyServer(function(input, output) {
         pop.small <- lapply(1:n.pop.small, FUN=createRndSolution)
         rvalues$initial.population<-pop.small
         
-        
       }else{
+        if(!is.null(rvalues$matrix)&&!is.null(rvalues$alfabeto)){
         n.pop.small <- ncol(rvalues$matrix)
         levels <- rvalues$alfabeto
         createRndSolution <- function(x) {
@@ -86,7 +94,7 @@ shinyServer(function(input, output) {
         }
         pop.small <- lapply(1:n.pop.small, FUN=createRndSolution)
         rvalues$initial.population<-pop.small
-        
+        }
       }
       switch (input$selectSubpopulation,
               "elitistSelection" = rvalues$selectSubpopulation <- elitistSelection,
@@ -110,15 +118,19 @@ shinyServer(function(input, output) {
               "swapMutation" = rvalues$mutate <- swapMutation,
               "factorMutation" = rvalues$mutate <- factorMutation
       )
-      
+      showNotification("Ongi bete duzu, zoaz exekuzioa leihatilara!")
     }
   }
   )
   
   observeEvent(input$run,{
+    if(!is.null(rvalues$problema)){
     args<-list()
+    args$resources <- cResource(time = input$denbora)
+    args$evaluate         <- rvalues$problema$evaluate
     if(input$Algoritmoa == "Bilaketa lokala"){
-      args$evaluate         <- rvalues$problema$evaluate
+      if(!is.null(rvalues$initial.solution)&&!is.null(rvalues$ingurunea)){
+      
       args$initial.solution <- rvalues$initial.solution
       args$neighborhood     <- rvalues$ingurunea
       if(input$selector =="greedy"){
@@ -126,11 +138,14 @@ shinyServer(function(input, output) {
       }else{
         args$selector         <- firstImprovementSelector
       }
-      args$resources <- cResource(evaluations = 100)
       rvalues$emaitza <- do.call(basicLocalSearch, args)
+      
       print("amaituta")
+      }
     }else{
-      args$evaluate <- rvalues$problema$evaluate
+      if(!is.null(rvalues$initial.population)&&!is.null(rvalues$selectSubpopulation)&&
+         !is.null(input$selection.ratio)&&!is.null(rvalues$selectCross)&&!is.null(rvalues$mutate)&&
+         !is.null(input$ratio)&&!is.null(input$mutation.rate)&&!is.null(rvalues$cross)){
       args$initial.population <- rvalues$initial.population
       args$selectSubpopulation <- rvalues$selectSubpopulation
       if(!is.null(input$use.ranking)){
@@ -148,21 +163,14 @@ shinyServer(function(input, output) {
       args$mutation.rate        <- input$mutation.rate
       args$cross                <- rvalues$cross
       if(input$Problema!="Travelling salesman problem"){
+        is(!is.null(input$cross.k))
         args$k<-input$cross.k
       }
-      if(!is.null(args$evaluate)&&!is.null(args$initial.population)&&!is.null(args$selectSubpopulation)&&
-         !is.null(args$selection.ratio)&&!is.null(args$selectCross)&&!is.null(args$mutate)&&!is.null(args$ratio)&&
-         !is.null(args$mutation.rate)&&!is.null(args$cross)){
-        
-        args$resources <- cResource(evaluations = input$eb.kopurua, time = input$denbora,iterations = input$it.kopurua)
-        
         rvalues$emaitza<-do.call(basicGeneticAlgorithm,args)
         print("amaituta")
         
-      }else{
-        print(args$initial.population)
-      }
       
+    }
     }
     #}
     # else{
@@ -172,7 +180,9 @@ shinyServer(function(input, output) {
     #   # 
     # }
     
-  })
+    print(getSolution(rvalues$emaitza))
+    print(rvalues$emaitza@resources)
+  }})
   
   
   

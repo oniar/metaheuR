@@ -125,7 +125,7 @@ shinyUI(
                     )),
              column(4, 
                     mainPanel(
-                      tags$h3("Code: "), verbatimTextOutput("algoritmoKodea"), textOutput("oni"),textOutput("onin")
+                      tags$h3("Code: "), verbatimTextOutput("algoritmoKodea"), uiOutput("emaitzak"),textOutput("onin")
                     )))
     
   )

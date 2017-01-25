@@ -172,13 +172,6 @@ shinyServer(function(input, output) {
       
     }
     }
-    #}
-    # else{
-    #   #print(rvalues$problema)
-    #   #print(rvalues$initial.solution)
-    #   #print(rvalues$ingurunea)
-    #   # 
-    # }
     
     print(getSolution(rvalues$emaitza))
     print(rvalues$emaitza@resources)
@@ -190,11 +183,16 @@ shinyServer(function(input, output) {
   
   
   
-  output$oni<-renderText({
-    gettext(
-      #ingurunea()
-    )
-    
+  output$emaitzak<-renderUI({
+    if(!is.null(rvalues$emaitza)){
+      if(input$Problema != "Travelling salesman problem"){
+        
+        paste(toString(rvalues$emaitza@solution))
+      }else{
+        paste(toString(rvalues$emaitza@solution@permutation))
+      
+      }
+    }
   })
   
   
@@ -548,7 +546,7 @@ dute inspirazioa"
   
   output$plotProgresioa <- renderPlot({
     if(!is.null(rvalues$emaitza))
-      plotProgress(rvalues$emaitza, size=1.1) + labs(y="Evaluation")
+      plotProgress(rvalues$emaitza, size=1.1) + labs(x="Evaluation")
     
   })
   # })

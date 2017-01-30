@@ -107,5 +107,6 @@ export(
   closestStringProblem,
   farthestStringProblem,
   cspGreedy,
-  fspGreedy
+  fspGreedy,
+  launchApp
 )

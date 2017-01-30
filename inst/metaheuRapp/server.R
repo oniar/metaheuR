@@ -203,7 +203,9 @@ shinyServer(function(input, output) {
     switch (
       input$Problema,
       "Travelling salesman problem" = paste(
-        "This function generates an evaluation function associated with a TSP problem"
+        "Saltzaile ibiltariaren ebazkizunak hiri multzo baterako hiri guztiak 
+        behin bakarrik, abiapuntura itzuliz, zeharkatzen dituen ibilbide laburrena
+        bilatzen duen ebazkizuna da."
       ),
       "Closest String Problem"      = paste(
         "Hainbat sekuentzia emanik, gertueneko beste sekuentzia bat itzultzen du."
@@ -234,7 +236,7 @@ paste(rvalues$problema[1])
       "Travelling salesman problem" = tags$div(
         numericInput(
           inputId = "tam.mat",
-          label = "n matrize zabalera sartuz sortu ausazko matrizea",
+          label = "n matrize zabalera",
           value = 4, 
           min = 4
         ),
@@ -440,7 +442,7 @@ dute inspirazioa"
               )}else{tags$div(
                 numericInput(
                   inputId = "populazio.tamaina",
-                  label = "Hasierako populazioa hausaz sortzen den arren, populazioaren tamaina sartu:",
+                  label = "Populazioaren tamaina:",
                   value = 100
                 ),
                 selectInput(
@@ -519,30 +521,7 @@ dute inspirazioa"
     
   })
   
-  # output$algoritmoKodea <- renderText({
-  #   if (input$Problema == "Grafoa koloreztatzearen problema") {
-  #     library("igraph")
-  #     library("metaheuR")
-  #     n <- 10
-  #     rnd.graph <- random.graph.game(n, p.or.m = 0.5)
-  #     gcol.problem <- graphColoringProblem(rnd.graph)
-  #     paste(gcol.problem[1])
-  #   }
-  #   else if (input$Problema == "Motxilaren problema") {
-  #     n <- 100
-  #     w <- runif(n)
-  #     v <- runif(n)
-  #     l <- sum(w[runif(n) > 0.5])
-  #     knp <- knapsackProblem(w, v, l)
-  #     paste(knp[1])
-  #   }
-  #   
-  #   else if (input$Problema == "Garraio problema") {
-  #     cmatrix <- matrix(runif(100), ncol = 10)
-  #     tsp <- tspProblem(cmatrix)
-  #     paste(tsp[1])
-  #   }
-  # })
+
   
   output$plotProgresioa <- renderPlot({
     if(!is.null(rvalues$emaitza))

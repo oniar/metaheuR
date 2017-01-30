@@ -1,6 +1,9 @@
 library(shiny)
 library(metaheuR)
 
+launchApp<-function (...){
+  shiny::runApp(system.file("metaheuRapp",package="metaheuR"),...)
+}
 
 shinyUI(
   navbarPage(

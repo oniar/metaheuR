@@ -128,7 +128,10 @@ shinyUI(
                     )),
              column(4, 
                     mainPanel(
-                      tags$h3("Code: "), verbatimTextOutput("algoritmoKodea"), uiOutput("emaitzak"),textOutput("onin")
+                      tags$h3("Emaitza: "), uiOutput("emaitzak"),textOutput("onin"),radioButtons("grafiko", "Aukeratu x:",
+                                                                                                 c("Denbora" = "denb",
+                                                                                                   "Iterazioak" = "ite",
+                                                                                                   "Ebaluazioak" = "eba"),selected = "denb")
                     )))
     
   )

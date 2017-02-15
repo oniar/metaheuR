@@ -186,10 +186,26 @@ shinyServer(function(input, output) {
   output$emaitzak<-renderUI({
     if(!is.null(rvalues$emaitza)){
       if(input$Problema != "Travelling salesman problem"){
-        
-        paste(toString(rvalues$emaitza@solution))
+        if(input$Algoritmoa=="Bilaketa lokala"){
+          paste(toString(rvalues$emaitza@solution))
+        }else{
+          sol<-rvalues$emaitza
+          a<-getSolution(sol)[[1]]
+          
+          toString(paste(a))
+          
+          
+        }
       }else{
-        paste(toString(rvalues$emaitza@solution@permutation))
+        if(input$Algoritmoa=="Bilaketa lokala"){
+          paste(toString(rvalues$emaitza@solution@permutation))
+        }else{
+          sol<-rvalues$emaitza
+          a<-getSolution(sol)
+          b<-a[[1]]
+          
+          toString(paste(b@permutation))
+        }
       
       }
     }
@@ -282,6 +298,7 @@ paste(rvalues$problema[1])
   
   output$matrize <- renderTable({
     if (input$Problema == "Travelling salesman problem") {
+      if((ncol(rvalues$matrix)==input$tam.mat)&&!is.null(rvalues$matrix))
       rvalues$matrix
     }
   })
@@ -391,7 +408,7 @@ dute inspirazioa"
               if (input$Problema == "Travelling salesman problem"){ tags$div(
                 numericInput(
                   inputId = "populazio.tamaina",
-                  label = "Hasierako populazioa hausaz sortzen den arren, populazioaren tamaina sartu:",
+                  label = "Populazioaren tamaina:",
                   value = 100
                 ),
                 selectInput(
@@ -524,9 +541,26 @@ dute inspirazioa"
 
   
   output$plotProgresioa <- renderPlot({
-    if(!is.null(rvalues$emaitza))
-      plotProgress(rvalues$emaitza, size=1.1) + labs(x="Evaluation")
-    
+    a<-"time"
+    if(!is.null(rvalues$emaitza)){
+      if(!is.null(input$grafiko)){
+        if(input$grafiko == "eba"){
+          print("E")
+          a<-"evaluations"
+        }
+        if(input$grafiko == "ite"){
+          print("I")
+          a<-"iterations"
+        }
+        if(input$grafiko == "denb"){
+          print("D")
+          a<-"time"
+        }
+        
+      }
+      plotProgress(rvalues$emaitza, x = a, size=1.1) + labs(x=a)
+      
+      }
   })
   # })
 })
